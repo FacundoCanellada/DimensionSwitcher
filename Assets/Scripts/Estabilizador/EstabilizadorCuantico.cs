@@ -25,7 +25,7 @@ public class EstabilizadorCuantico : MonoBehaviour
             textoInteractuar.enabled = false;
     }
 
-    void OnTriggerEnter(Collider other)
+    void OnTriggerEnter2D(Collider2D other)
     {
         Cientifico player = other.GetComponent<Cientifico>();
         if (player != null)
@@ -39,8 +39,9 @@ public class EstabilizadorCuantico : MonoBehaviour
         }
     }
 
-    void OnTriggerExit(Collider other)
+    void OnTriggerExit2D(Collider2D other)
     {
+        Debug.Log("Trigger Enter 2D con: " + other.name);
         Cientifico player = other.GetComponent<Cientifico>();
         if (player != null && textoInteractuar != null)
         {

@@ -307,11 +307,11 @@ PrefabInstance:
       objectReference: {fileID: 11400000, guid: 1480468c62d7be344910c54821926c94, type: 2}
     - target: {fileID: 4621660032203409426, guid: ec815b14f5e13984283b0aa971fff194, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 7.161182
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 4621660032203409426, guid: ec815b14f5e13984283b0aa971fff194, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.7280921
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4621660032203409426, guid: ec815b14f5e13984283b0aa971fff194, type: 3}
       propertyPath: m_LocalPosition.z
@@ -731,6 +731,18 @@ MonoBehaviour:
   hud: {fileID: 289002551}
   pantallaVictoria: {fileID: 1695596564}
   pantallaDerrota: {fileID: 1206626222}
+  enemigoPrefab:
+  - {fileID: 624880607717432211, guid: ec815b14f5e13984283b0aa971fff194, type: 3}
+  - {fileID: 624880607717432211, guid: ec815b14f5e13984283b0aa971fff194, type: 3}
+  - {fileID: 624880607717432211, guid: ec815b14f5e13984283b0aa971fff194, type: 3}
+  posicionesEnemigosIniciales:
+  - {x: 4, y: 3.5}
+  - {x: 7, y: 1}
+  - {x: 5, y: -2}
+  componentesDropEnemigos:
+  - {fileID: 11400000, guid: 009e8bc8f88c6a949a228187978595dc, type: 2}
+  - {fileID: 11400000, guid: 1480468c62d7be344910c54821926c94, type: 2}
+  - {fileID: 11400000, guid: 8798d636143f7a4449f30595bac5a0a6, type: 2}
 --- !u!1 &476790598
 GameObject:
   m_ObjectHideFlags: 0
@@ -2308,11 +2320,11 @@ PrefabInstance:
       objectReference: {fileID: 11400000, guid: 8798d636143f7a4449f30595bac5a0a6, type: 2}
     - target: {fileID: 4621660032203409426, guid: ec815b14f5e13984283b0aa971fff194, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 5.6776295
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 4621660032203409426, guid: ec815b14f5e13984283b0aa971fff194, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -2.1187243
+      value: -2
       objectReference: {fileID: 0}
     - target: {fileID: 4621660032203409426, guid: ec815b14f5e13984283b0aa971fff194, type: 3}
       propertyPath: m_LocalPosition.z
@@ -3341,7 +3353,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.07952237, y: 0.05578345}
+  m_Offset: {x: 0.06486869, y: -0.14155042}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -3351,7 +3363,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 2.537434, y: 1.4920274}
+  m_Size: {x: 3.5192914, y: 3.6001337}
   m_EdgeRadius: 0
 --- !u!1 &2050580738
 GameObject:
@@ -3439,6 +3451,14 @@ PrefabInstance:
     - target: {fileID: 1402530043224855608, guid: 6f916ae11a1d5c84c91943155b0e6a2c, type: 3}
       propertyPath: m_Name
       value: Cientifico
+      objectReference: {fileID: 0}
+    - target: {fileID: 2959055631641814675, guid: 6f916ae11a1d5c84c91943155b0e6a2c, type: 3}
+      propertyPath: m_BodyType
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2959055631641814675, guid: 6f916ae11a1d5c84c91943155b0e6a2c, type: 3}
+      propertyPath: m_GravityScale
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6367037482270683821, guid: 6f916ae11a1d5c84c91943155b0e6a2c, type: 3}
       propertyPath: m_LocalPosition.x
