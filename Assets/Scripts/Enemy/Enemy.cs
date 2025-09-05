@@ -3,7 +3,7 @@ using UnityEngine;
 public class Enemy : MonoBehaviour
 {
     public int saludEnemy = 100;
-    public int daño = 10;
+    public int daÃ±o = 10;
     public float rangoDeteccion = 10f;
     public float velocidad = 5f;
     public Item dropItem;
@@ -16,8 +16,8 @@ public class Enemy : MonoBehaviour
 
     void Start()
     {
-        gameManager = FindObjectOfType<GameManager>();
-        target = FindObjectOfType<Cientifico>();
+        gameManager = FindFirstObjectByType<GameManager>();
+        target = FindFirstObjectByType<Cientifico>();
     }
 
     void Update()
@@ -32,7 +32,7 @@ public class Enemy : MonoBehaviour
                 {
                     if (Time.time - tiempoUltimoAtaque > tiempoEntreAtaques)
                     {
-                        target.RecibirDanio(daño, gameManager);
+                        target.RecibirDanio(daÃ±o, gameManager);
                         tiempoUltimoAtaque = Time.time;
                     }
                 }
