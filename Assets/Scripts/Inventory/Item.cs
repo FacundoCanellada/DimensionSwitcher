@@ -5,8 +5,51 @@ public enum ItemType { Food, Water, Components, Weapon }
 [CreateAssetMenu(fileName = "Item", menuName = "Items/Item")]
 public class Item : ScriptableObject
 {
+    [Header("Propiedades Básicas")]
     public int id;
     public ItemType type;
     public Sprite icon;
+    
+    [Header("Valores de Efectos")]
+    public int valor; // Nutrición, hidratación, etc.
     public int weaponDamage; // Solo se usa si type == Weapon
+    
+    [Header("Información Visual")]
+    public string nombre;
+    public string descripcion;
+    
+    /// <summary>
+    /// Usa el item en el jugador aplicando sus efectos
+    /// </summary>
+    public bool Usar(Cientifico cientifico)
+    {
+        if (cientifico == null) return false;
+        
+        switch (type)
+        {
+            case ItemType.Food:
+                cientifico.hambre = Mathf.Min(100, cientifico.hambre + valor);
+                Debug.Log($"Consumiste {nombre}. Hambre restaurada: +{valor}");
+                return true;
+                
+            case ItemType.Water:
+                cientifico.sed = Mathf.Min(100, cientifico.sed + valor);
+                Debug.Log($"Consumiste {nombre}. Sed restaurada: +{valor}");
+                return true;
+                
+            case ItemType.Weapon:
+                cientifico.arma = this;
+                Debug.Log($"Equipaste {nombre}. Daño: {weaponDamage}");
+                return true;
+                
+            case ItemType.Components:
+                // Los componentes no se "usan" directamente, se insertan en el estabilizador
+                Debug.Log($"Componente {nombre} listo para insertar en el estabilizador");
+                return false;
+                
+            default:
+                Debug.LogWarning($"Tipo de item no reconocido: {type}");
+                return false;
+        }
+    }
 }

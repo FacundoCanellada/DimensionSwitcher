@@ -12,7 +12,8 @@ GameObject:
   - component: {fileID: 7238020031765534784}
   - component: {fileID: 2092333445178554309}
   - component: {fileID: 3994015047129764083}
-  m_Layer: 6
+  - component: {fileID: -6184752681421988962}
+  m_Layer: 8
   m_Name: Enemy
   m_TagString: Enemy
   m_Icon: {fileID: 0}
@@ -101,11 +102,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8159e6c0b1c2404448e9bf8761a37ed2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  saludEnemy: 100
+  saludEnemy: 5
+  saludMaxima: 0
   "da\xF1o": 10
   rangoDeteccion: 10
   velocidad: 2
-  dropItem: {fileID: 11400000, guid: 009e8bc8f88c6a949a228187978595dc, type: 2}
+  dropType: 2
+  dropChance: 1
+  dropMin: 1
+  dropMax: 1
+  posibleDrops:
+  - {fileID: 11400000, guid: 009e8bc8f88c6a949a228187978595dc, type: 2}
   tiempoEntreAtaques: 1
 --- !u!70 &3994015047129764083
 CapsuleCollider2D:
@@ -141,6 +148,33 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_Size: {x: 1, y: 2}
+  m_Offset: {x: 0.005044937, y: 0.0075671673}
+  m_Size: {x: 1.322876, y: 2.2169318}
   m_Direction: 0
+--- !u!50 &-6184752681421988962
+Rigidbody2D:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 624880607717432211}
+  m_BodyType: 1
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0

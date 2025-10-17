@@ -13,9 +13,10 @@ GameObject:
   - component: {fileID: 6399112292119471383}
   - component: {fileID: 4870433996811427213}
   - component: {fileID: 2959055631641814675}
-  m_Layer: 0
+  - component: {fileID: 77695795387930895}
+  m_Layer: 7
   m_Name: Cientifico
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -107,11 +108,15 @@ MonoBehaviour:
   stamina: 100
   hambre: 100
   sed: 100
-  inventory: {fileID: 11400000, guid: ce8beb30fe80d6347940f5cbadc9dc10, type: 2}
-  arma: {fileID: 0}
+  inventory: {fileID: 77695795387930895}
+  arma: {fileID: 11400000, guid: 126fd9bdc45bded45ba2d5d3e79db2c5, type: 2}
   velocidad: 5
-  armaRenderer: {fileID: 0}
   rangoAtaque: 2
+  armaRenderer: {fileID: 5272682617274218815}
+  tiempoReduccionNecesidades: 30
+  cantidadReduccionHambre: 5
+  cantidadReduccionSed: 8
+  cantidadReduccionStamina: 3
 --- !u!70 &4870433996811427213
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -164,7 +169,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDamping: 0
   m_AngularDamping: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 0
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -176,6 +181,19 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &77695795387930895
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1402530043224855608}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d08f7fcfec293e46b904bfc07bca006, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxSlots: 20
 --- !u!1 &4112979842588715146
 GameObject:
   m_ObjectHideFlags: 0
@@ -186,7 +204,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1773876362047867611}
   - component: {fileID: 5272682617274218815}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Arma
   m_TagString: Untagged
   m_Icon: {fileID: 0}

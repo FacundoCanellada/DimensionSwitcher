@@ -9,7 +9,7 @@ public class EstabilizadorCuantico : MonoBehaviour
     public List<int> componentesInsertados = new();
     public bool reparado = false;
 
-    [Header("Interacción")]
+    [Header("Interacciï¿½n")]
     public TextMeshProUGUI textoInteractuar; // Asignar en el inspector (Canvas UI)
     private Cientifico cientificoCerca;
 
@@ -57,10 +57,10 @@ public class EstabilizadorCuantico : MonoBehaviour
             bool colocoAlguno = false;
             foreach (var id in componentesNecesarios)
             {
-                if (!componentesInsertados.Contains(id) && cientificoCerca.inventory.GetItemCount(id) > 0)
+                if (!componentesInsertados.Contains(id) && cientificoCerca.inventory.CheckItem(id, 1))
                 {
                     Item item = BuscarItemPorId(id);
-                    if (item != null && cientificoCerca.inventory.RemoveItem(item, 1))
+                    if (item != null && cientificoCerca.inventory.RemoverItem(id, 1))
                     {
                         componentesInsertados.Add(id);
                         colocoAlguno = true;
@@ -68,7 +68,7 @@ public class EstabilizadorCuantico : MonoBehaviour
                         VerificarReparado();
                         if (gameManager != null)
                             gameManager.ComprobarVictoria();
-                        break; // Solo coloca uno por pulsación
+                        break; // Solo coloca uno por pulsaciï¿½n
                     }
                 }
             }
@@ -94,7 +94,7 @@ public class EstabilizadorCuantico : MonoBehaviour
         reparado = componentesNecesarios.TrueForAll(x => componentesInsertados.Contains(x));
         if (reparado && textoInteractuar != null)
         {
-            textoInteractuar.text = "¡Estabilizador reparado!";
+            textoInteractuar.text = "ï¿½Estabilizador reparado!";
         }
     }
 
