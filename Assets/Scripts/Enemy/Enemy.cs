@@ -1,10 +1,26 @@
 using UnityEngine;
 
+/// <summary>
+/// Tipos de enemigos disponibles
+/// </summary>
+public enum EnemyType
+{
+    Slime,
+    Orc,
+    Predator
+}
+
 public class Enemy : MonoBehaviour
 {
-    [Header("Estadísticas del Enemigo")]
+    [Header("Configuración del Tipo")]
+    public EnemyTypeData enemyTypeData;
+    public EnemyType enemyType = EnemyType.Slime;
+    [Range(0, 2)]
+    public int spriteVariant = 0; // 0, 1, 2 para los 3 estilos diferentes
+    
+    [Header("Estadísticas del Enemigo (Auto-configuradas)")]
     public int saludEnemy = 100;
-    [SerializeField] private int saludMaxima; // Guardamos la salud original del prefab
+    [SerializeField] private int saludMaxima;
     public int daño = 10;
     public float rangoDeteccion = 10f;
     public float velocidad = 5f;
@@ -22,6 +38,9 @@ public class Enemy : MonoBehaviour
     private GameManager gameManager;
     private QuestManager questManager;
     
+    [Header("Sistema de Animaciones")]
+    public EnemyAnimationController animationController;
+    
     // Control de ataques
     private float tiempoUltimoAtaque = 0f;
     public float tiempoEntreAtaques = 1f;
@@ -32,13 +51,27 @@ public class Enemy : MonoBehaviour
 
     void Start()
     {
-        // Guardar la salud máxima del prefab al inicio
+        // Guardar la salud máxima del inspector ANTES de configurar el tipo
+        // (para que no se sobrescriba con el valor del EnemyTypeData)
         saludMaxima = saludEnemy;
+        
+        // Configurar enemigo según su tipo
+        ConfigurarTipoEnemigo();
         
         // Buscar referencias
         gameManager = FindFirstObjectByType<GameManager>();
         target = FindFirstObjectByType<Cientifico>();
         questManager = FindFirstObjectByType<QuestManager>();
+        
+        // Buscar controlador de animaciones
+        if (animationController == null)
+            animationController = GetComponent<EnemyAnimationController>();
+            
+        if (animationController != null)
+        {
+            animationController.OnAttackComplete += OnAttackAnimationComplete;
+            animationController.OnDeathComplete += OnDeathAnimationComplete;
+        }
         
         // Guardar posición inicial para patrullaje
         posicionInicial = transform.position;
@@ -91,6 +124,12 @@ public class Enemy : MonoBehaviour
     {
         Vector3 direccion = (target.transform.position - transform.position).normalized;
         transform.position += direccion * velocidad * Time.deltaTime;
+        
+        // Actualizar animaciones de movimiento
+        if (animationController != null)
+        {
+            animationController.UpdateMovement(new Vector2(direccion.x, direccion.y));
+        }
     }
     
     /// <summary>
@@ -105,10 +144,21 @@ public class Enemy : MonoBehaviour
             // Volver a posición inicial
             Vector3 direccion = (posicionInicial - transform.position).normalized;
             transform.position += direccion * (velocidad * 0.5f) * Time.deltaTime;
+            
+            // Actualizar animaciones de movimiento
+            if (animationController != null)
+            {
+                animationController.UpdateMovement(new Vector2(direccion.x, direccion.y));
+            }
         }
         else
         {
             estaPatrullando = true;
+            // Animación idle
+            if (animationController != null)
+            {
+                animationController.UpdateMovement(Vector2.zero);
+            }
         }
     }
     
@@ -121,6 +171,17 @@ public class Enemy : MonoBehaviour
         {
             if (target != null && gameManager != null)
             {
+                // Calcular dirección hacia el jugador para el ataque
+                Vector3 direccionAtaque = (target.transform.position - transform.position).normalized;
+                
+                // Iniciar animación de ataque
+                if (animationController != null && !animationController.IsAttacking())
+                {
+                    animationController.SetDirection(new Vector2(direccionAtaque.x, direccionAtaque.y));
+                    animationController.StartAttack();
+                }
+                
+                // Aplicar daño inmediatamente
                 target.RecibirDanio(daño, gameManager);
                 tiempoUltimoAtaque = Time.time;
                 
@@ -150,6 +211,23 @@ public class Enemy : MonoBehaviour
     {
         Debug.Log("Enemigo eliminado!");
         
+        // Iniciar animación de muerte
+        if (animationController != null && !animationController.IsDead())
+        {
+            animationController.StartDeath();
+        }
+        else
+        {
+            // Si no hay animación, morir inmediatamente
+            CompletarMuerte();
+        }
+    }
+    
+    /// <summary>
+    /// Completa la muerte del enemigo (llamado cuando termina la animación)
+    /// </summary>
+    private void CompletarMuerte()
+    {
         // Intentar dropear item
         DropearItem();
         
@@ -234,7 +312,7 @@ public class Enemy : MonoBehaviour
     /// </summary>
     public void Resetear()
     {
-        saludEnemy = 100;
+        saludEnemy = saludMaxima; // Usar la salud configurada en el inspector
         transform.position = posicionInicial;
         estaPatrullando = true;
         tiempoUltimoAtaque = 0f;
@@ -266,18 +344,131 @@ public class Enemy : MonoBehaviour
     /// </summary>
     private bool EstaEnMismaDimensionQueJugador()
     {
-        // El enemigo está en Dim_Altered, el jugador puede estar en Dim_Normal o Dim_Altered
-        // Solo pueden interactuar si ambos están en Dim_Altered
-        if (gameObject.layer == LayerMask.NameToLayer("Dim_Altered"))
+        DimensionSwitcher dimensionSwitcher = FindFirstObjectByType<DimensionSwitcher>();
+        if (dimensionSwitcher == null) return true; // Si no hay dimension switcher, siempre pueden interactuar
+        
+        int dimNormal = LayerMask.NameToLayer("Dim_Normal");
+        int dimAltered = LayerMask.NameToLayer("Dim_Altered");
+        
+        // Enemigo en Dim_Altered: solo interactúa si jugador está en dimensión alterada
+        if (gameObject.layer == dimAltered)
         {
-            // El jugador debe estar también en Dim_Altered para que puedan interactuar
-            DimensionSwitcher dimensionSwitcher = FindFirstObjectByType<DimensionSwitcher>();
-            if (dimensionSwitcher != null)
-            {
-                return dimensionSwitcher.dimensionActual == true; // true = dimensión alterada
-            }
+            return dimensionSwitcher.dimensionActual == true;
         }
-        return false; // Por defecto no interactúan
+        // Enemigo en Dim_Normal: solo interactúa si jugador está en dimensión normal
+        else if (gameObject.layer == dimNormal)
+        {
+            return dimensionSwitcher.dimensionActual == false;
+        }
+        
+        // Si el enemigo no está en ninguna dimensión específica, siempre puede interactuar
+        return true;
+    }
+    
+    /// <summary>
+    /// Configura el enemigo según su tipo y variante de sprite
+    /// </summary>
+    /// <summary>
+    /// Configura el enemigo con un tipo específico desde EnemyTypeData
+    /// </summary>
+    public void ConfigurarTipoEnemigo(EnemyTypeData data)
+    {
+        enemyTypeData = data;
+        if (data != null)
+        {
+            enemyType = data.enemyType;
+        }
+        ConfigurarTipoEnemigo();
+    }
+    
+    private void ConfigurarTipoEnemigo()
+    {
+        // Si hay datos de tipo específico, usarlos
+        if (enemyTypeData != null)
+        {
+            saludEnemy = enemyTypeData.health;
+            daño = enemyTypeData.damage;
+            velocidad = enemyTypeData.speed;
+            rangoDeteccion = enemyTypeData.detectionRange;
+            tiempoEntreAtaques = enemyTypeData.attackCooldown;
+            
+            // Aplicar tinte de color si está configurado
+            SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
+            if (spriteRenderer != null && enemyTypeData.tintColor != Color.white)
+            {
+                spriteRenderer.color = enemyTypeData.tintColor;
+            }
+            
+            // Configurar animator si está especificado
+            Animator animator = GetComponent<Animator>();
+            if (animator != null && enemyTypeData.animatorController != null)
+            {
+                animator.runtimeAnimatorController = enemyTypeData.animatorController;
+            }
+            
+            // Configurar drops
+            if (enemyTypeData.possibleDrops != null && enemyTypeData.possibleDrops.Length > 0)
+            {
+                posibleDrops = enemyTypeData.possibleDrops;
+                dropChance = enemyTypeData.dropChance;
+                dropMin = enemyTypeData.dropMinAmount;
+                dropMax = enemyTypeData.dropMaxAmount;
+            }
+            
+            Debug.Log($"Enemigo configurado como {enemyTypeData.enemyName} (Tipo: {enemyType}, Variante: {spriteVariant})");
+        }
+        else
+        {
+            // Configuración por defecto según el tipo
+            switch (enemyType)
+            {
+                case EnemyType.Slime:
+                    saludEnemy = 5;
+                    daño = 3;
+                    velocidad = 2f;
+                    break;
+                case EnemyType.Orc:
+                    saludEnemy = 15;
+                    daño = 8;
+                    velocidad = 3f;
+                    break;
+                case EnemyType.Predator:
+                    saludEnemy = 20;
+                    daño = 12;
+                    velocidad = 4f;
+                    break;
+            }
+            Debug.Log($"Enemigo configurado con valores por defecto (Tipo: {enemyType})");
+        }
+        
+        // Actualizar nombre del GameObject
+        gameObject.name = $"{enemyType}_{spriteVariant}";
+    }
+    
+    /// <summary>
+    /// Callback cuando termina la animación de ataque
+    /// </summary>
+    private void OnAttackAnimationComplete()
+    {
+        // Aquí se puede agregar lógica adicional después del ataque
+    }
+    
+    /// <summary>
+    /// Callback cuando termina la animación de muerte
+    /// </summary>
+    private void OnDeathAnimationComplete()
+    {
+        CompletarMuerte();
+    }
+    
+    void OnDestroy()
+    {
+        // Desuscribirse de eventos para evitar errores
+        if (animationController != null)
+        {
+            animationController.OnAttackComplete -= OnAttackAnimationComplete;
+            animationController.OnDeathComplete -= OnDeathAnimationComplete;
+        }
     }
     
     /// <summary>

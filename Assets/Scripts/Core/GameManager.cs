@@ -15,9 +15,29 @@ public class GameManager : MonoBehaviour
     public GameObject pantallaDerrota;
 
     [Header("Configuración de Enemigos")]
-    public GameObject enemigoPrefab; // UN SOLO PREFAB
-    public int cantidadEnemigos = 3; // CANTIDAD A CREAR
+    public bool usarEnemigosPreColocados = true; // Si true, usa enemigos de la escena; si false, spawneará desde prefab
+    public GameObject enemigoPrefab; // Prefab base (solo se usa si usarEnemigosPreColocados = false)
+    public int cantidadEnemigos = 3;
     public List<Item> componentesDropEnemigos;
+    
+    [Header("Tipos de Enemigos")]
+    public EnemyTypeData[] tiposEnemigos; // Array con los 3 tipos
+    public bool usarTiposAleatorios = true; // Si usar tipos random o en orden
+    
+    // Información de enemigos pre-colocados guardada al inicio
+    private List<EnemySpawnData> enemigosIniciales = new List<EnemySpawnData>();
+    
+    [System.Serializable]
+    private class EnemySpawnData
+    {
+        public Vector3 posicion;
+        public Quaternion rotacion;
+        public int layer;
+        public EnemyTypeData tipoData;
+        public EnemyType tipo;
+        public int spriteVariant;
+        public Item[] drops;
+    }
 
     [Header("Estado del Juego")]
     private bool juegoTerminado = false;
@@ -36,13 +56,23 @@ public class GameManager : MonoBehaviour
         // Buscar referencias automáticamente
         BuscarReferenciasAutomaticas();
         
+        // Guardar estado inicial de enemigos si están pre-colocados
+        if (usarEnemigosPreColocados)
+        {
+            GuardarEstadoInicialEnemigos();
+            Debug.Log("Sistema configurado para usar enemigos pre-colocados. NO se llamará RespawnearEnemigos en Start.");
+        }
+        
         // No iniciar automáticamente el juego, esperar por UIManager
         // Si no hay UIManager, usar comportamiento legacy
         if (uiManager == null)
         {
             Debug.Log("No se encontró UIManager, usando comportamiento legacy");
             // Comportamiento legacy: iniciar directamente
-            RespawnearEnemigos();
+            if (!usarEnemigosPreColocados)
+            {
+                RespawnearEnemigos();
+            }
             juegoIniciado = true;
         }
         else
@@ -70,7 +100,28 @@ public class GameManager : MonoBehaviour
         if (estabilizador != null) estabilizador.Resetear();
         if (questManager != null) questManager.Resetear();
         if (dimensionSwitcher != null) dimensionSwitcher.Resetear();
-        RespawnearEnemigos();
+        
+        // Solo llamar RespawnearEnemigos si NO estamos usando pre-colocados
+        // Si usamos pre-colocados, los enemigos ya están en la escena
+        if (!usarEnemigosPreColocados)
+        {
+            RespawnearEnemigos();
+        }
+        else
+        {
+            // Si hay enemigos pre-colocados, solo resetearlos
+            GameObject[] enemigos = GameObject.FindGameObjectsWithTag("Enemy");
+            foreach (GameObject enemigo in enemigos)
+            {
+                Enemy enemyScript = enemigo.GetComponent<Enemy>();
+                if (enemyScript != null)
+                {
+                    enemyScript.ResetearSalud();
+                    enemyScript.Resetear();
+                }
+            }
+            Debug.Log("Enemigos pre-colocados reseteados sin duplicar.");
+        }
         
         // Habilitar controles del jugador
         if (cientifico != null) cientifico.HabilitarControl(true);
@@ -254,6 +305,41 @@ public class GameManager : MonoBehaviour
 
     #endregion
 
+    #region Gestión de Enemigos Pre-colocados
+
+    /// <summary>
+    /// Guarda el estado inicial de todos los enemigos en la escena
+    /// </summary>
+    private void GuardarEstadoInicialEnemigos()
+    {
+        enemigosIniciales.Clear();
+        
+        GameObject[] enemigos = GameObject.FindGameObjectsWithTag("Enemy");
+        Debug.Log($"=== GUARDANDO ESTADO INICIAL DE {enemigos.Length} ENEMIGOS ===");
+        
+        foreach (GameObject enemigo in enemigos)
+        {
+            Enemy enemyScript = enemigo.GetComponent<Enemy>();
+            if (enemyScript == null) continue;
+            
+            EnemySpawnData data = new EnemySpawnData
+            {
+                posicion = enemigo.transform.position,
+                rotacion = enemigo.transform.rotation,
+                layer = enemigo.layer,
+                tipoData = enemyScript.enemyTypeData,
+                tipo = enemyScript.enemyType,
+                spriteVariant = enemyScript.spriteVariant,
+                drops = enemyScript.posibleDrops != null ? (Item[])enemyScript.posibleDrops.Clone() : null
+            };
+            
+            enemigosIniciales.Add(data);
+            Debug.Log($"Guardado enemigo: {enemigo.name} en capa {LayerMask.LayerToName(data.layer)} en posición {data.posicion}");
+        }
+    }
+
+    #endregion
+
     #region Update y Utilidades
 
     void Update()
@@ -287,6 +373,149 @@ public class GameManager : MonoBehaviour
     public void RespawnearEnemigos()
     {
         Debug.Log("=== RESPAWN ENEMIGOS INICIADO ===");
+        
+        if (usarEnemigosPreColocados)
+        {
+            RespawnearEnemigosPreColocados();
+        }
+        else
+        {
+            RespawnearEnemigosDesdePrefab();
+        }
+        
+        Debug.Log("=== RESPAWN ENEMIGOS COMPLETADO ===");
+    }
+    
+    /// <summary>
+    /// Restaura enemigos desde sus posiciones guardadas al inicio
+    /// </summary>
+    private void RespawnearEnemigosPreColocados()
+    {
+        Debug.Log("=== MODO: Restaurar enemigos pre-colocados ===");
+        
+        // Primero verificar si ya existen enemigos en la escena
+        GameObject[] enemigosExistentes = GameObject.FindGameObjectsWithTag("Enemy");
+        
+        // Si ya hay enemigos Y tenemos datos guardados, solo resetearlos sin destruir
+        if (enemigosExistentes.Length > 0 && enemigosIniciales.Count > 0 && enemigosExistentes.Length == enemigosIniciales.Count)
+        {
+            Debug.Log($"Reseteando {enemigosExistentes.Length} enemigos existentes a sus posiciones originales");
+            
+            for (int i = 0; i < enemigosExistentes.Length && i < enemigosIniciales.Count; i++)
+            {
+                GameObject enemigo = enemigosExistentes[i];
+                EnemySpawnData data = enemigosIniciales[i];
+                
+                // Restaurar posición y rotación
+                enemigo.transform.position = data.posicion;
+                enemigo.transform.rotation = data.rotacion;
+                enemigo.layer = data.layer;
+                
+                // Resetear estado del enemigo
+                Enemy enemyScript = enemigo.GetComponent<Enemy>();
+                if (enemyScript != null)
+                {
+                    enemyScript.enemyTypeData = data.tipoData;
+                    enemyScript.enemyType = data.tipo;
+                    enemyScript.spriteVariant = data.spriteVariant;
+                    enemyScript.posibleDrops = data.drops;
+                    enemyScript.ResetearSalud();
+                    enemyScript.Resetear();
+                    enemyScript.enabled = true;
+                }
+                
+                // Reactivar colliders
+                Collider2D[] colliders = enemigo.GetComponentsInChildren<Collider2D>();
+                foreach (var collider in colliders)
+                {
+                    collider.enabled = true;
+                }
+            }
+            
+            Debug.Log("Enemigos reseteados sin destruir/recrear");
+            return;
+        }
+        
+        // Si no hay enemigos o la cantidad no coincide, destruir y recrear
+        Debug.Log($"Destruyendo {enemigosExistentes.Length} enemigos para recrear desde configuración guardada");
+        
+        foreach (var enemigo in enemigosExistentes)
+        {
+            if (enemigo != null)
+            {
+                Destroy(enemigo);
+            }
+        }
+        
+        // Verificar que tenemos datos guardados
+        if (enemigosIniciales.Count == 0)
+        {
+            Debug.LogWarning("No hay enemigos iniciales guardados. ¿Los enemigos estaban en la escena al inicio?");
+            return;
+        }
+        
+        // Verificar que tenemos prefab
+        if (enemigoPrefab == null)
+        {
+            Debug.LogError("=== NO HAY PREFAB DE ENEMIGO CONFIGURADO ===");
+            return;
+        }
+        
+        // Recrear cada enemigo desde su configuración guardada
+        for (int i = 0; i < enemigosIniciales.Count; i++)
+        {
+            EnemySpawnData data = enemigosIniciales[i];
+            
+            Debug.Log($"Recreando enemigo {i} en posición {data.posicion}, capa {LayerMask.LayerToName(data.layer)}");
+            GameObject enemigo = Instantiate(enemigoPrefab, data.posicion, data.rotacion);
+            
+            if (enemigo == null)
+            {
+                Debug.LogError($"ERROR: No se pudo crear enemigo {i}");
+                continue;
+            }
+            
+            // Configurar propiedades básicas
+            enemigo.name = $"Enemy_{i}";
+            enemigo.tag = "Enemy";
+            enemigo.layer = data.layer;
+            
+            Enemy enemyScript = enemigo.GetComponent<Enemy>();
+            if (enemyScript != null)
+            {
+                // Restaurar configuración original
+                enemyScript.enemyTypeData = data.tipoData;
+                enemyScript.enemyType = data.tipo;
+                enemyScript.spriteVariant = data.spriteVariant;
+                enemyScript.posibleDrops = data.drops;
+                
+                // Configurar tipo desde data si existe
+                if (data.tipoData != null)
+                {
+                    enemyScript.ConfigurarTipoEnemigo(data.tipoData);
+                }
+                
+                enemyScript.enabled = true;
+                enemyScript.ResetearSalud();
+                
+                Debug.Log($"Enemigo {i} recreado: Tipo={enemyScript.enemyType}, Vida={enemyScript.saludEnemy}, Capa={LayerMask.LayerToName(data.layer)}");
+            }
+
+            // Activar colliders
+            Collider2D[] colliders = enemigo.GetComponentsInChildren<Collider2D>();
+            foreach (var collider in colliders)
+            {
+                collider.enabled = true;
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Crea enemigos desde prefab en posiciones fijas (modo original)
+    /// </summary>
+    private void RespawnearEnemigosDesdePrefab()
+    {
+        Debug.Log("=== MODO: Spawnear enemigos desde prefab ===");
         
         // Elimina todos los enemigos actuales
         GameObject[] enemigosActuales = GameObject.FindGameObjectsWithTag("Enemy");
@@ -334,7 +563,7 @@ public class GameManager : MonoBehaviour
                 continue;
             }
             
-            // Configurar enemigo
+            // Configurar enemigo básico
             enemigo.name = $"Enemy_{i}";
             enemigo.tag = "Enemy";
             enemigo.layer = LayerMask.NameToLayer("Dim_Altered");
@@ -342,6 +571,9 @@ public class GameManager : MonoBehaviour
             Enemy enemyScript = enemigo.GetComponent<Enemy>();
             if (enemyScript != null)
             {
+                // Configurar tipo de enemigo
+                ConfigurarTipoEnemigo(enemyScript, i);
+                
                 enemyScript.enabled = true;
                 enemyScript.ResetearSalud();
                 
@@ -351,7 +583,7 @@ public class GameManager : MonoBehaviour
                     enemyScript.posibleDrops[0] = drop;
                 }
                 
-                Debug.Log($"Enemigo {i} creado: Vida={enemyScript.saludEnemy}");
+                Debug.Log($"Enemigo {i} creado: Tipo={enemyScript.enemyType}, Vida={enemyScript.saludEnemy}");
             }
 
             // Activar colliders
@@ -361,8 +593,39 @@ public class GameManager : MonoBehaviour
                 collider.enabled = true;
             }
         }
+    }
+    
+    /// <summary>
+    /// Configura el tipo de enemigo según el índice
+    /// </summary>
+    private void ConfigurarTipoEnemigo(Enemy enemyScript, int index)
+    {
+        if (tiposEnemigos == null || tiposEnemigos.Length == 0)
+        {
+            // Sin configuración específica, usar tipos por defecto
+            EnemyType[] tiposDefault = { EnemyType.Slime, EnemyType.Orc, EnemyType.Predator };
+            enemyScript.enemyType = tiposDefault[index % tiposDefault.Length];
+            enemyScript.spriteVariant = Random.Range(0, 3); // Variante aleatoria (0-2)
+            return;
+        }
         
-        Debug.Log("=== RESPAWN ENEMIGOS COMPLETADO ===");
+        if (usarTiposAleatorios)
+        {
+            // Tipo aleatorio
+            int tipoIndex = Random.Range(0, tiposEnemigos.Length);
+            enemyScript.enemyTypeData = tiposEnemigos[tipoIndex];
+            enemyScript.enemyType = tiposEnemigos[tipoIndex].enemyType;
+        }
+        else
+        {
+            // Tipo en orden
+            int tipoIndex = index % tiposEnemigos.Length;
+            enemyScript.enemyTypeData = tiposEnemigos[tipoIndex];
+            enemyScript.enemyType = tiposEnemigos[tipoIndex].enemyType;
+        }
+        
+        // Variante de sprite aleatoria (0-2)
+        enemyScript.spriteVariant = Random.Range(0, 3);
     }
     
     /// <summary>

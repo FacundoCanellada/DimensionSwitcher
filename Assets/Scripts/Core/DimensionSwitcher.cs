@@ -126,25 +126,71 @@ public class DimensionSwitcher : MonoBehaviour
     /// </summary>
     private void SetearDimension(bool esAlterada)
     {
-        int layerActiva = esAlterada ? alteredLayerMask : normalLayerMask;
-        int layerInactiva = esAlterada ? normalLayerMask : alteredLayerMask;
-        
         if (esAlterada)
         {
-            // Dimensión ALTERADA: Mostrar enemigos, ocultar estabilizador e items
-            CambiarVisibilidadDimension("Enemy", true);
+            // Dimensión ALTERADA: Mostrar solo objetos en Dim_Altered
+            CambiarVisibilidadPorLayer("Enemy", alteredLayerMask, true);  // Mostrar enemigos de Dim_Altered
+            CambiarVisibilidadPorLayer("Enemy", normalLayerMask, false);   // Ocultar enemigos de Dim_Normal
             CambiarVisibilidadDimension("Estabilizador", false);
             CambiarVisibilidadDimension("Item", false);
-            Debug.Log("DIMENSIÓN ALTERADA: Enemigos visibles, Estabilizador oculto");
+            Debug.Log("DIMENSIÓN ALTERADA: Enemigos de Dim_Altered visibles, resto oculto");
         }
         else
         {
-            // Dimensión NORMAL: Mostrar estabilizador e items, ocultar enemigos
-            CambiarVisibilidadDimension("Enemy", false);
+            // Dimensión NORMAL: Mostrar solo objetos en Dim_Normal
+            CambiarVisibilidadPorLayer("Enemy", normalLayerMask, true);    // Mostrar enemigos de Dim_Normal
+            CambiarVisibilidadPorLayer("Enemy", alteredLayerMask, false);  // Ocultar enemigos de Dim_Altered
             CambiarVisibilidadDimension("Estabilizador", true);
             CambiarVisibilidadDimension("Item", true);
-            Debug.Log("DIMENSIÓN NORMAL: Estabilizador visible, Enemigos ocultos");
+            Debug.Log("DIMENSIÓN NORMAL: Enemigos de Dim_Normal visibles, resto oculto");
         }
+    }
+    
+    /// <summary>
+    /// Cambia la visibilidad de objetos con un tag Y layer específicos
+    /// </summary>
+    private void CambiarVisibilidadPorLayer(string tag, int layer, bool visible)
+    {
+        GameObject[] objetos = GameObject.FindGameObjectsWithTag(tag);
+        int contador = 0;
+        
+        foreach (GameObject obj in objetos)
+        {
+            // Solo afectar objetos en el layer especificado
+            if (obj.layer != layer) continue;
+            
+            contador++;
+            
+            // Cambiar la visibilidad del objeto manteniendo el GameObject activo
+            Renderer renderer = obj.GetComponent<Renderer>();
+            if (renderer != null)
+            {
+                renderer.enabled = visible;
+            }
+            
+            // Para sprites usar SpriteRenderer
+            SpriteRenderer spriteRenderer = obj.GetComponent<SpriteRenderer>();
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.enabled = visible;
+            }
+            
+            // Desactiva colliders para que no interactúen cuando están invisibles
+            Collider2D[] colliders = obj.GetComponentsInChildren<Collider2D>();
+            foreach (Collider2D collider in colliders)
+            {
+                collider.enabled = visible;
+            }
+            
+            // Desactiva componentes Enemy para que no ataquen cuando están invisibles
+            Enemy enemy = obj.GetComponent<Enemy>();
+            if (enemy != null)
+            {
+                enemy.enabled = visible;
+            }
+        }
+        
+        Debug.Log($"Configurados {contador} objetos con tag '{tag}' en layer {LayerMask.LayerToName(layer)} como {(visible ? "VISIBLES" : "INVISIBLES")}");
     }
     
     /// <summary>

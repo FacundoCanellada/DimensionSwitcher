@@ -13,6 +13,8 @@ GameObject:
   - component: {fileID: 2092333445178554309}
   - component: {fileID: 3994015047129764083}
   - component: {fileID: -6184752681421988962}
+  - component: {fileID: 5643360992904409291}
+  - component: {fileID: 2404375283395113090}
   m_Layer: 8
   m_Name: Enemy
   m_TagString: Enemy
@@ -79,15 +81,15 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: -9095717837082945937, guid: 207ee8102dd4143d288186ef0be518ee, type: 3}
-  m_Color: {r: 1, g: 0, b: 0, a: 1}
+  m_Sprite: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
   m_Size: {x: 1, y: 2}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!114 &2092333445178554309
@@ -102,6 +104,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8159e6c0b1c2404448e9bf8761a37ed2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  enemyTypeData: {fileID: 0}
+  enemyType: 0
+  spriteVariant: 0
   saludEnemy: 5
   saludMaxima: 0
   "da\xF1o": 10
@@ -111,8 +116,8 @@ MonoBehaviour:
   dropChance: 1
   dropMin: 1
   dropMax: 1
-  posibleDrops:
-  - {fileID: 11400000, guid: 009e8bc8f88c6a949a228187978595dc, type: 2}
+  posibleDrops: []
+  animationController: {fileID: 5643360992904409291}
   tiempoEntreAtaques: 1
 --- !u!70 &3994015047129764083
 CapsuleCollider2D:
@@ -178,3 +183,41 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &5643360992904409291
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 624880607717432211}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01347420004e60f41ab83f99a7ceb3fd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animator: {fileID: 2404375283395113090}
+  spriteRenderer: {fileID: 7238020031765534784}
+  attackDuration: 0.5
+  deathDuration: 1
+--- !u!95 &2404375283395113090
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 624880607717432211}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 2ae92458c9541064181625df1d85a464, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
