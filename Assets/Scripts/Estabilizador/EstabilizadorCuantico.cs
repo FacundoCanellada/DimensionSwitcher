@@ -9,8 +9,9 @@ public class EstabilizadorCuantico : MonoBehaviour
     public List<int> componentesInsertados = new();
     public bool reparado = false;
 
-    [Header("Interacci�n")]
-    public TextMeshProUGUI textoInteractuar; // Asignar en el inspector (Canvas UI)
+    [Header("Interacción")]
+    public GameObject panelTexto; // Panel hijo con el texto (World Space)
+    public TextMeshProUGUI textoInteractuar; // TextMeshPro dentro del panel
     private Cientifico cientificoCerca;
 
     [Header("GameManager")]
@@ -21,8 +22,9 @@ public class EstabilizadorCuantico : MonoBehaviour
 
     void Start()
     {
-        if (textoInteractuar != null)
-            textoInteractuar.enabled = false;
+        // Ocultar el panel al inicio
+        if (panelTexto != null)
+            panelTexto.SetActive(false);
     }
 
     void OnTriggerEnter2D(Collider2D other)
@@ -31,21 +33,22 @@ public class EstabilizadorCuantico : MonoBehaviour
         if (player != null)
         {
             cientificoCerca = player;
-            if (textoInteractuar != null)
+            if (panelTexto != null && textoInteractuar != null)
             {
+                panelTexto.SetActive(true);
                 textoInteractuar.text = "Presiona E para colocar componente";
-                textoInteractuar.enabled = true;
             }
         }
     }
 
     void OnTriggerExit2D(Collider2D other)
     {
-        Debug.Log("Trigger Enter 2D con: " + other.name);
         Cientifico player = other.GetComponent<Cientifico>();
-        if (player != null && textoInteractuar != null)
+        if (player != null)
         {
-            textoInteractuar.enabled = false;
+            if (panelTexto != null)
+                panelTexto.SetActive(false);
+            
             cientificoCerca = null;
         }
     }
@@ -109,7 +112,9 @@ public class EstabilizadorCuantico : MonoBehaviour
     {
         componentesInsertados.Clear();
         reparado = false;
-        if (textoInteractuar != null)
-            textoInteractuar.enabled = false;
+        
+        // Ocultar el panel al resetear
+        if (panelTexto != null)
+            panelTexto.SetActive(false);
     }
 }

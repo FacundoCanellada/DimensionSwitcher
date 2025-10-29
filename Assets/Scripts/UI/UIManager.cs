@@ -16,14 +16,18 @@ public class UIManager : MonoBehaviour
     [Header("Menu Principal")]
     public GameObject menuPrincipal;
     public Button botonIniciar;
+    public Button botonSalir;
 
     [Header("Pantalla Victoria")]
     public GameObject pantallaVictoria;
     public Button botonMenuVictoria;
+    public Button botonSalirVictoria;
 
     [Header("Pantalla Derrota")]
     public GameObject pantallaDerrota;
     public Button botonReiniciarDerrota;
+    public Button botonMenuDerrota;
+    public Button botonSalirDerrota;
 
     [Header("Menu de Pausa")]
     public GameObject menuPausa; // Panel del menú de pausa
@@ -31,6 +35,9 @@ public class UIManager : MonoBehaviour
     public GameObject panelOpciones; // Pestaña de opciones
     public GameObject panelControles; // Pestaña de controles
     public GameObject panelEstadisticas; // Pestaña de estadísticas del jugador
+    
+    [Header("Tutorial")]
+    public TutorialManager tutorialManager; // Gestor del tutorial
     
     [Header("Referencias")]
     public GameManager gameManager;
@@ -52,15 +59,29 @@ public class UIManager : MonoBehaviour
 
     private void Start()
     {
-        // Configurar botones
+        // Configurar botones del MENÚ PRINCIPAL
         if (botonIniciar != null)
             botonIniciar.onClick.AddListener(IniciarJuego);
         
+        if (botonSalir != null)
+            botonSalir.onClick.AddListener(SalirDelJuego);
+        
+        // Configurar botones de PANTALLA VICTORIA
         if (botonMenuVictoria != null)
             botonMenuVictoria.onClick.AddListener(VolverAlMenu);
         
+        if (botonSalirVictoria != null)
+            botonSalirVictoria.onClick.AddListener(SalirDelJuego);
+        
+        // Configurar botones de PANTALLA DERROTA
         if (botonReiniciarDerrota != null)
             botonReiniciarDerrota.onClick.AddListener(ReiniciarJuego);
+        
+        if (botonMenuDerrota != null)
+            botonMenuDerrota.onClick.AddListener(VolverAlMenu);
+        
+        if (botonSalirDerrota != null)
+            botonSalirDerrota.onClick.AddListener(SalirDelJuego);
 
         // Inicializar menú de pausa cerrado
         if (menuPausa != null) menuPausa.SetActive(false);
@@ -186,15 +207,38 @@ public class UIManager : MonoBehaviour
 
     public void IniciarJuego()
     {
+        // Ocultar menú principal
+        if (menuPrincipal != null)
+            menuPrincipal.SetActive(false);
+        
+        // SIEMPRE MOSTRAR TUTORIAL
+        if (tutorialManager != null && tutorialManager.panelTutorial != null)
+        {
+            tutorialManager.panelTutorial.SetActive(true);
+            tutorialManager.MostrarTutorial();
+        }
+        else
+        {
+            // Si no hay tutorial, iniciar directo
+            IniciarJuegoDirectamente();
+        }
+    }
+    
+    /// <summary>
+    /// Inicia el juego sin mostrar el tutorial (llamado después del tutorial o si ya lo vio)
+    /// </summary>
+    public void IniciarJuegoDirectamente()
+    {
         if (menuPrincipal != null) menuPrincipal.SetActive(false);
-        if (hudContainer != null) hudContainer.SetActive(true);
+        
+        if (hudContainer != null)
+            hudContainer.SetActive(true);
+        
         if (pantallaVictoria != null) pantallaVictoria.SetActive(false);
         if (pantallaDerrota != null) pantallaDerrota.SetActive(false);
         
-        // Reanudar el juego
         Time.timeScale = 1;
         
-        // Reiniciar el estado del juego cuando se inicia
         if (gameManager != null)
             gameManager.IniciarJuego();
     }
@@ -244,6 +288,20 @@ public class UIManager : MonoBehaviour
         // Reiniciar el nivel
         if (gameManager != null)
             gameManager.ReiniciarNivel();
+    }
+
+    /// <summary>
+    /// Cierra el juego (funciona en build, en editor solo muestra log)
+    /// </summary>
+    public void SalirDelJuego()
+    {
+        Debug.Log("Saliendo del juego...");
+        
+        #if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+        #else
+            Application.Quit();
+        #endif
     }
 
     /// <summary>
