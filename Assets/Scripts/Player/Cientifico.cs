@@ -7,8 +7,6 @@ public class Cientifico : MonoBehaviour
     public int salud = 100;
     public int stamina = 100;
     private float staminaReal = 100f; // valor interno para regeneración suave
-    public int hambre = 100;
-    public int sed = 100;
     
     [Header("Sistema de Inventario")]
     public Inventory inventory;
@@ -24,20 +22,6 @@ public class Cientifico : MonoBehaviour
     [Header("Sistema de Animaciones")]
     public PlayerAnimationControllerSimple animationController;
     
-    [Header("Sistema de Necesidades")]
-    public float tiempoReduccionNecesidades = 30f; // Cada 30 segundos
-    public int cantidadReduccionHambre = 5;
-    public int cantidadReduccionSed = 8;
-    public int cantidadReduccionStamina = 3;
-    
-    [Header("Degradación Gradual")]
-    public float velocidadDegradacionHambre = 0.5f; // Hambre por segundo (más lenta y gradual)
-    public float velocidadDegradacionSed = 0.8f; // Sed por segundo (un poco más rápido que hambre)
-    [Tooltip("Intervalo (segundos) entre aplicación de daño por inanición/sed")]
-    public float intervaloDanioNecesidades = 2.5f;
-    [Tooltip("Daño por tick cuando hambre o sed son 0" )]
-    public int danioPorNecesidades = 3;
-    
     [Header("Recuperación de Stamina")]
     public float velocidadRecuperacionStamina = 25f; // Stamina por segundo en reposo
     public float velocidadRecuperacionStaminaMovimiento = 10f; // Stamina por segundo moviéndose
@@ -46,13 +30,6 @@ public class Cientifico : MonoBehaviour
     private bool controlHabilitado = true;
     private Vector3 posicionInicial;
     private Item armaInicial;
-    
-    // Sistema de necesidades
-    private float ultimaReduccionNecesidades = 0f;
-    // Acumuladores flotantes reales para degradación gradual
-    private float acumuladorHambre = 0f;
-    private float acumuladorSed = 0f;
-    private float timerDanioNecesidades = 0f;
     
     // Referencias a otros sistemas
     private QuestManager questManager;
@@ -84,10 +61,7 @@ public class Cientifico : MonoBehaviour
             animationController.OnAttackComplete += OnAttackAnimationComplete;
         }
         
-        // Inicializar sistema de necesidades
-        ultimaReduccionNecesidades = Time.time;
-        
-        Debug.Log("Científico inicializado");
+        Debug.Log("Científico inicializado - Sistema simplificado (solo salud)");
     }
 
     void Update()
@@ -102,15 +76,6 @@ public class Cientifico : MonoBehaviour
         
         // Manejar inventario
         ManejarInventario();
-        
-        // Sistema de necesidades (solo chequeamos efectos de salud, no reducimos)
-        // ActualizarNecesidades(); // DESACTIVADO - causaba doble degradación
-        
-        // Solo degradación gradual de hambre y sed (más realista)
-        ActualizarDegradacionGradual();
-        
-        // Comprobar efectos de hambre/sed baja en la salud
-        ComprobarEfectosSalud();
         
         // Actualizar visualización del arma
         ActualizarVisualizacionArma();
@@ -316,97 +281,6 @@ public class Cientifico : MonoBehaviour
     }
     
     /// <summary>
-    /// Actualiza el sistema de necesidades básicas (sistema original mantenido)
-    /// </summary>
-    private void ActualizarNecesidades()
-    {
-        if (Time.time - ultimaReduccionNecesidades >= tiempoReduccionNecesidades)
-        {
-            // Reducir hambre y sed con el tiempo
-            hambre = Mathf.Max(0, hambre - cantidadReduccionHambre);
-            sed = Mathf.Max(0, sed - cantidadReduccionSed);
-            
-            ultimaReduccionNecesidades = Time.time;
-            
-            // Avisos cuando las necesidades están bajas
-            if (hambre <= 20)
-                Debug.Log("¡Tienes mucha hambre! Busca comida.");
-            
-            if (sed <= 20)
-                Debug.Log("¡Tienes mucha sed! Busca agua.");
-            
-            // Efectos de hambre/sed baja en la salud
-            if (hambre <= 0 || sed <= 0)
-            {
-                salud = Mathf.Max(0, salud - 5);
-                Debug.Log("¡Tu salud disminuye por falta de cuidados básicos!");
-            }
-        }
-    }
-    
-    /// <summary>
-    /// Degradación gradual adicional de hambre y sed
-    /// </summary>
-    private void ActualizarDegradacionGradual()
-    {
-        // Usar acumuladores flotantes para no perder precisión
-        acumuladorHambre += velocidadDegradacionHambre * Time.deltaTime;
-        acumuladorSed += velocidadDegradacionSed * Time.deltaTime;
-
-        if (acumuladorHambre >= 1f)
-        {
-            int puntos = Mathf.FloorToInt(acumuladorHambre);
-            if (puntos > 0)
-            {
-                hambre = Mathf.Max(0, hambre - puntos);
-                acumuladorHambre -= puntos;
-            }
-        }
-
-        if (acumuladorSed >= 1f)
-        {
-            int puntos = Mathf.FloorToInt(acumuladorSed);
-            if (puntos > 0)
-            {
-                sed = Mathf.Max(0, sed - puntos);
-                acumuladorSed -= puntos;
-            }
-        }
-    }
-    
-    /// <summary>
-    /// Comprueba efectos de hambre y sed en la salud
-    /// </summary>
-    private void ComprobarEfectosSalud()
-    {
-        // Avisos periódicos cada 5s usando timerDanioNecesidades como referencia separada
-        // (No usar Time.time % n para evitar saltos al pausar/reanudar)
-        // Daño acumulado cuando alguna necesidad está a 0
-        if (hambre <= 20 || sed <= 20)
-        {
-            // Mensajes simples (podríamos throttlear si hace falta)
-            if (hambre == 20 || sed == 20)
-                Debug.Log("Advertencia: Necesidades bajas (hambre o sed < 20)");
-        }
-
-        if (hambre <= 0 || sed <= 0)
-        {
-            timerDanioNecesidades += Time.unscaledDeltaTime; // Independiente de pausas por inventario
-            if (timerDanioNecesidades >= intervaloDanioNecesidades)
-            {
-                salud = Mathf.Max(0, salud - danioPorNecesidades);
-                timerDanioNecesidades = 0f;
-                Debug.Log($"Daño por necesidades críticas: -{danioPorNecesidades}. Salud:{salud}");
-            }
-        }
-        else
-        {
-            // Resetear timer si ya no estamos en estado crítico
-            timerDanioNecesidades = 0f;
-        }
-    }
-    
-    /// <summary>
     /// Actualiza la visualización del arma
     /// </summary>
     private void ActualizarVisualizacionArma()
@@ -490,48 +364,42 @@ public class Cientifico : MonoBehaviour
     }
     
     /// <summary>
-    /// Aplica efectos básicos de items (versión simplificada)
+    /// Aplica efectos básicos de items - SISTEMA SIMPLIFICADO (SOLO SALUD)
+    /// PÚBLICO: Para ser llamado desde Item.Usar() sin manejar inventario
     /// </summary>
-    private void AplicarEfectoItem(int itemId)
+    public void AplicarEfectoItem(int itemId)
     {
         Debug.Log($"🍎 AplicarEfectoItem llamado con ID: {itemId}");
-        Debug.Log($"📊 ANTES: Salud:{salud}, Hambre:{hambre}, Sed:{sed}");
+        Debug.Log($"📊 ANTES: Salud:{salud}");
         
-        // Items de comida (IDs 10-15) - Curan HAMBRE + SALUD
+        // TODOS los items de comida, agua y medicina SOLO CURAN SALUD
+        // Items de comida (IDs 10-15) - Curan 25 HP
         if (itemId >= 10 && itemId <= 15)
         {
-            int nuevaHambre = Mathf.Min(100, hambre + 25);
-            int nuevaSalud = Mathf.Min(100, salud + 15);
-            hambre = nuevaHambre;
+            int nuevaSalud = Mathf.Min(100, salud + 25);
             salud = nuevaSalud;
-            Debug.Log($"🍞 Comida consumida: Hambre {hambre} (+25), Salud {salud} (+15)");
+            Debug.Log($"🍞 Comida consumida: Salud {salud} (+25)");
         }
-        // Items de agua (IDs 16-20) - Curan SED + SALUD
+        // Items de agua (IDs 16-20) - Curan 20 HP
         else if (itemId >= 16 && itemId <= 20)
         {
-            int nuevaSed = Mathf.Min(100, sed + 30);
-            int nuevaSalud = Mathf.Min(100, salud + 10);
-            sed = nuevaSed;
+            int nuevaSalud = Mathf.Min(100, salud + 20);
             salud = nuevaSalud;
-            Debug.Log($"💧 Agua consumida: Sed {sed} (+30), Salud {salud} (+10)");
+            Debug.Log($"💧 Agua consumida: Salud {salud} (+20)");
         }
-        // Items de salud (IDs 21-25) - Curan SALUD + un poco de HAMBRE y SED
+        // Items de medicina (IDs 21-25) - Curan 40 HP
         else if (itemId >= 21 && itemId <= 25)
         {
-            int nuevaSalud = Mathf.Min(100, salud + 30);
-            int nuevaHambre = Mathf.Min(100, hambre + 10);
-            int nuevaSed = Mathf.Min(100, sed + 10);
+            int nuevaSalud = Mathf.Min(100, salud + 40);
             salud = nuevaSalud;
-            hambre = nuevaHambre;
-            sed = nuevaSed;
-            Debug.Log($"💊 Medicina usada: Salud {salud} (+30), Hambre {hambre} (+10), Sed {sed} (+10)");
+            Debug.Log($"💊 Medicina usada: Salud {salud} (+40)");
         }
         else
         {
             Debug.LogWarning($"⚠️ Item ID {itemId} no reconocido - sin efectos aplicados");
         }
         
-        Debug.Log($"📊 DESPUÉS: Salud:{salud}, Hambre:{hambre}, Sed:{sed}");
+        Debug.Log($"📊 DESPUÉS: Salud:{salud}");
     }
 
     /// <summary>
@@ -570,21 +438,15 @@ public class Cientifico : MonoBehaviour
     /// </summary>
     public void Resetear()
     {
-        // Solo resetear stats al inicio del juego
+        // SISTEMA SIMPLIFICADO: Solo resetear salud y stamina
         salud = 100;
         stamina = 100;
-        hambre = 100;
-        sed = 100;
+        staminaReal = 100f;
         
         if (inventory != null)
         {
             inventory.Limpiar();
-            
-            // TEMPORAL: Agregar items de prueba para testing
-            inventory.AgregarItem(1, 1); // Componente 1
-            inventory.AgregarItem(10, 3); // Pan x3
-            inventory.AgregarItem(20, 2); // Agua x2
-            Debug.Log("Items de prueba agregados al inventario");
+            Debug.Log("Inventario limpiado - empieza vacío");
         }
         
         arma = armaInicial;
@@ -592,7 +454,7 @@ public class Cientifico : MonoBehaviour
         controlHabilitado = true;
         inventarioAbierto = false;
         
-        Debug.Log("Científico COMPLETAMENTE reseteado (stats + inventario + posición)");
+        Debug.Log("Científico COMPLETAMENTE reseteado (salud + stamina + inventario + posición)");
     }
     
     /// <summary>

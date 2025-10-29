@@ -17,9 +17,11 @@ public class InventoryUI : MonoBehaviour
     public Image itemPreviewImage;
     
     [Header("Navegación")]
-    public int slotsVisibles = 9; // Slots visibles en pantalla
+    public int columnas = 4; // 4 columnas como en tu imagen
+    public int filas = 3; // 3 filas
     public Color colorSlotSeleccionado = Color.yellow;
     public Color colorSlotNormal = Color.white;
+    public Image bordeSeleccion; // Imagen/borde que resalta el slot seleccionado
     
     [Header("Referencias de Items")]
     public Item[] todosLosItemsDelJuego; // Asignar todos los ScriptableObject de items
@@ -97,19 +99,26 @@ public class InventoryUI : MonoBehaviour
     
     void Update()
     {
-        // Manejar apertura/cierre del inventario
-        if (Input.GetKeyDown(KeyCode.I))
+        // El control de apertura/cierre ahora lo maneja UIManager con Tab
+        // Solo procesar input si el panel está activo
+        if (inventoryPanel != null && inventoryPanel.activeSelf)
         {
-            Debug.Log("Tecla I presionada - Intentando abrir/cerrar inventario");
-            ToggleInventario();
-        }
-        
-        // Solo procesar input si el inventario está abierto
-        if (inventarioAbierto)
-        {
+            inventarioAbierto = true;
             ManejarNavegacion();
             ManejarAcciones();
         }
+        else
+        {
+            inventarioAbierto = false;
+        }
+    }
+    
+    void OnEnable()
+    {
+        // Cuando se activa el panel, SIEMPRE actualizar el inventario
+        ActualizarInventario();
+        slotSeleccionado = 0;
+        Debug.Log("InventoryUI OnEnable - Inventario actualizado");
     }
     
     /// <summary>
@@ -147,8 +156,10 @@ public class InventoryUI : MonoBehaviour
         }
         slots.Clear();
         
+        int totalSlots = columnas * filas;
+        
         // Crear nuevos slots
-        for (int i = 0; i < slotsVisibles; i++)
+        for (int i = 0; i < totalSlots; i++)
         {
             GameObject slotObj = Instantiate(slotPrefab, slotsParent);
             InventorySlot slot = slotObj.GetComponent<InventorySlot>();
@@ -167,61 +178,38 @@ public class InventoryUI : MonoBehaviour
     }
     
     /// <summary>
-    /// Abre o cierra el inventario
-    /// </summary>
-    private void ToggleInventario()
-    {
-        inventarioAbierto = !inventarioAbierto;
-        
-        Debug.Log($"ToggleInventario llamado. Estado: {inventarioAbierto}");
-        Debug.Log($"InventoryPanel es null: {inventoryPanel == null}");
-        
-        if (inventoryPanel != null)
-        {
-            inventoryPanel.SetActive(inventarioAbierto);
-            Debug.Log($"InventoryPanel activado: {inventoryPanel.activeSelf}");
-        }
-        else
-        {
-            Debug.LogError("¡InventoryPanel es null! Asigna la referencia en el Inspector.");
-        }
-        
-        if (inventarioAbierto)
-        {
-            ActualizarInventario();
-            slotSeleccionado = 0;
-        }
-        
-        // Pausar/despausar el juego
-        Time.timeScale = inventarioAbierto ? 0f : 1f;
-        
-        Debug.Log($"Inventario {(inventarioAbierto ? "abierto" : "cerrado")}");
-    }
-    
-    /// <summary>
     /// Maneja la navegación con teclado
     /// </summary>
     private void ManejarNavegacion()
     {
+        int totalSlots = columnas * filas;
+        
         // Navegación horizontal
         if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
         {
-            CambiarSlotSeleccionado(1);
+            slotSeleccionado++;
+            if (slotSeleccionado >= totalSlots) slotSeleccionado = 0;
+            ActualizarSeleccion();
         }
         else if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
         {
-            CambiarSlotSeleccionado(-1);
+            slotSeleccionado--;
+            if (slotSeleccionado < 0) slotSeleccionado = totalSlots - 1;
+            ActualizarSeleccion();
         }
         
-        // Navegación vertical (si hay múltiples filas)
-        int slotsPerRow = 3;
+        // Navegación vertical
         if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W))
         {
-            CambiarSlotSeleccionado(-slotsPerRow);
+            slotSeleccionado -= columnas;
+            if (slotSeleccionado < 0) slotSeleccionado += totalSlots;
+            ActualizarSeleccion();
         }
         else if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S))
         {
-            CambiarSlotSeleccionado(slotsPerRow);
+            slotSeleccionado += columnas;
+            if (slotSeleccionado >= totalSlots) slotSeleccionado -= totalSlots;
+            ActualizarSeleccion();
         }
     }
     
@@ -230,39 +218,17 @@ public class InventoryUI : MonoBehaviour
     /// </summary>
     private void ManejarAcciones()
     {
-        // Usar item
-        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.E))
+        // Usar/Equipar item con X
+        if (Input.GetKeyDown(KeyCode.X))
         {
             UsarItemSeleccionado();
         }
         
-        // Tirar item
-        if (Input.GetKeyDown(KeyCode.Delete) || Input.GetKeyDown(KeyCode.X))
+        // Tirar item con Delete
+        if (Input.GetKeyDown(KeyCode.Delete))
         {
             TirarItemSeleccionado();
         }
-        
-        // Cerrar inventario
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            ToggleInventario();
-        }
-    }
-    
-    /// <summary>
-    /// Cambia el slot seleccionado
-    /// </summary>
-    private void CambiarSlotSeleccionado(int direccion)
-    {
-        if (inventory == null) return;
-        
-        var todosLosItems = inventory.GetTodosLosItems();
-        int totalItems = todosLosItems.Count;
-        
-        if (totalItems == 0) return;
-        
-        slotSeleccionado = (slotSeleccionado + direccion + totalItems) % totalItems;
-        ActualizarSeleccion();
     }
     
     /// <summary>
@@ -315,6 +281,13 @@ public class InventoryUI : MonoBehaviour
             slots[i].SetSeleccionado(esSeleccionado);
         }
         
+        // Mover el borde de selección si existe
+        if (bordeSeleccion != null && slotSeleccionado < slots.Count)
+        {
+            bordeSeleccion.transform.position = slots[slotSeleccionado].transform.position;
+            bordeSeleccion.gameObject.SetActive(true);
+        }
+        
         // Actualizar información del item seleccionado
         MostrarInformacionItem();
     }
@@ -363,7 +336,7 @@ public class InventoryUI : MonoBehaviour
         if (itemQuantityText != null)
             itemQuantityText.text = $"Cantidad: {cantidad}";
         
-        if (itemPreviewImage != null)
+       if (itemPreviewImage != null)
         {
             itemPreviewImage.sprite = item.icon;
             itemPreviewImage.enabled = item.icon != null;

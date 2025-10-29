@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: 10
   type: 0
-  icon: {fileID: 10901, guid: 0000000000000000f000000000000000, type: 0}
+  icon: {fileID: 1145549564063729937, guid: 64127885d447b2345b987eb617256291, type: 3}
   valor: 30
   weaponDamage: 0
-  nombre: Pan
+  nombre: Comida
   descripcion: Restaura 30 de hambre

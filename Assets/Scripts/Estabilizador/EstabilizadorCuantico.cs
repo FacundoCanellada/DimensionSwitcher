@@ -94,7 +94,14 @@ public class EstabilizadorCuantico : MonoBehaviour
         reparado = componentesNecesarios.TrueForAll(x => componentesInsertados.Contains(x));
         if (reparado && textoInteractuar != null)
         {
-            textoInteractuar.text = "�Estabilizador reparado!";
+            textoInteractuar.text = "¡Estabilizador reparado!";
+            Debug.Log("=== ESTABILIZADOR COMPLETAMENTE REPARADO ===");
+            
+            // Notificar al GameManager inmediatamente
+            if (gameManager != null)
+            {
+                gameManager.ComprobarVictoria();
+            }
         }
     }
 

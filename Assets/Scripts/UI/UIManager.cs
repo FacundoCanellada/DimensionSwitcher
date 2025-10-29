@@ -4,10 +4,8 @@ using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
-    [Header("HUD Elements")]
+    [Header("HUD Elements - SISTEMA SIMPLIFICADO")]
     public Slider salud;
-    public Slider sed;
-    public Slider hambre;
     public Slider stamina;
     public TextMeshProUGUI dimensionText;
     public Image icon1;
@@ -27,17 +25,27 @@ public class UIManager : MonoBehaviour
     public GameObject pantallaDerrota;
     public Button botonReiniciarDerrota;
 
+    [Header("Menu de Pausa")]
+    public GameObject menuPausa; // Panel del menú de pausa
+    public GameObject panelInventario; // Pestaña de inventario
+    public GameObject panelOpciones; // Pestaña de opciones
+    public GameObject panelControles; // Pestaña de controles
+    public GameObject panelEstadisticas; // Pestaña de estadísticas del jugador
+    
     [Header("Referencias")]
     public GameManager gameManager;
 
     [Header("Suavizado de Barras")]
     [Tooltip("Velocidad de interpolación de las barras (mayor = más rápido)")]
     public float velocidadLerp = 8f;
+    
+    // Variables de menú de pausa
+    private bool menuPausaAbierto = false;
+    private enum PestanaActiva { Inventario, Opciones, Controles, Estadisticas }
+    private PestanaActiva pestanaActual = PestanaActiva.Controles; // Controles por defecto
 
-    // Valores suavizados internos
+    // Valores suavizados internos - SISTEMA SIMPLIFICADO
     private float saludVisual;
-    private float sedVisual;
-    private float hambreVisual;
     private float staminaVisual;
 
     private bool inicializadoBarras = false;
@@ -54,8 +62,115 @@ public class UIManager : MonoBehaviour
         if (botonReiniciarDerrota != null)
             botonReiniciarDerrota.onClick.AddListener(ReiniciarJuego);
 
+        // Inicializar menú de pausa cerrado
+        if (menuPausa != null) menuPausa.SetActive(false);
+
         // Mostrar solo el menú principal al inicio
         MostrarMenuPrincipal();
+    }
+    
+    private void Update()
+    {
+        // Solo manejar menú de pausa si el juego está en curso
+        if (menuPrincipal != null && menuPrincipal.activeSelf) return;
+        if (pantallaVictoria != null && pantallaVictoria.activeSelf) return;
+        if (pantallaDerrota != null && pantallaDerrota.activeSelf) return;
+        
+        // Abrir/cerrar menú de pausa con Escape o P
+        if (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.P))
+        {
+            ToggleMenuPausa();
+        }
+        
+        // Si el menú está abierto, manejar navegación entre pestañas
+        if (menuPausaAbierto)
+        {
+            // E - Siguiente pestaña
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                CambiarPestanaSiguiente();
+            }
+            // Q - Pestaña anterior
+            else if (Input.GetKeyDown(KeyCode.Q))
+            {
+                CambiarPestanaAnterior();
+            }
+            else if (Input.GetKeyDown(KeyCode.C))
+            {
+                CerrarMenuPausa();
+            }
+        }
+    }
+    
+    private void CambiarPestanaSiguiente()
+    {
+        int siguiente = ((int)pestanaActual + 1) % 4; // 4 pestañas totales
+        pestanaActual = (PestanaActiva)siguiente;
+        ActualizarPestanas();
+    }
+    
+    private void CambiarPestanaAnterior()
+    {
+        int anterior = ((int)pestanaActual - 1);
+        if (anterior < 0) anterior = 3; // 4 pestañas, índice 0-3
+        pestanaActual = (PestanaActiva)anterior;
+        ActualizarPestanas();
+    }
+    
+    private void ToggleMenuPausa()
+    {
+        if (menuPausaAbierto)
+        {
+            CerrarMenuPausa();
+        }
+        else
+        {
+            AbrirMenuPausa();
+        }
+    }
+    
+    private void AbrirMenuPausa()
+    {
+        menuPausaAbierto = true;
+        if (menuPausa != null) menuPausa.SetActive(true);
+        
+        // Mostrar pestaña de CONTROLES por defecto (para que el jugador sepa cómo jugar)
+        pestanaActual = PestanaActiva.Controles;
+        ActualizarPestanas();
+        
+        Time.timeScale = 0f; // Pausar el juego
+        
+        Debug.Log("Menú de pausa abierto - Mostrando Controles por defecto");
+    }
+    
+    private void CerrarMenuPausa()
+    {
+        menuPausaAbierto = false;
+        if (menuPausa != null) menuPausa.SetActive(false);
+        
+        Time.timeScale = 1f; // Reanudar el juego
+    }
+    
+    private void CambiarPestana(PestanaActiva nuevaPestana)
+    {
+        pestanaActual = nuevaPestana;
+        ActualizarPestanas();
+    }
+    
+    private void ActualizarPestanas()
+    {
+        // Activar/desactivar paneles según la pestaña actual
+        if (panelInventario != null)
+            panelInventario.SetActive(pestanaActual == PestanaActiva.Inventario);
+        
+        if (panelOpciones != null)
+            panelOpciones.SetActive(pestanaActual == PestanaActiva.Opciones);
+        
+        if (panelControles != null)
+            panelControles.SetActive(pestanaActual == PestanaActiva.Controles);
+        
+        if (panelEstadisticas != null)
+            panelEstadisticas.SetActive(pestanaActual == PestanaActiva.Estadisticas);
     }
 
     public void MostrarMenuPrincipal()
@@ -132,7 +247,7 @@ public class UIManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Actualiza el HUD con información del jugador, estabilizador y dimensión
+    /// Actualiza el HUD con información del jugador, estabilizador y dimensión - SISTEMA SIMPLIFICADO
     /// </summary>
     public void Actualizar(Cientifico cientifico, EstabilizadorCuantico estabilizador, DimensionSwitcher dimensionSwitcher = null)
     {
@@ -140,12 +255,8 @@ public class UIManager : MonoBehaviour
         if (!inicializadoBarras)
         {
             saludVisual = cientifico.salud;
-            sedVisual = cientifico.sed;
-            hambreVisual = cientifico.hambre;
             staminaVisual = cientifico.stamina;
             if (salud != null) salud.value = saludVisual;
-            if (sed != null) sed.value = sedVisual;
-            if (hambre != null) hambre.value = hambreVisual;
             if (stamina != null) stamina.value = staminaVisual;
             inicializadoBarras = true;
         }
@@ -153,8 +264,6 @@ public class UIManager : MonoBehaviour
         float t = Time.unscaledDeltaTime * velocidadLerp;
         // Lerp de valores
         saludVisual = Mathf.Lerp(saludVisual, cientifico.salud, t);
-        sedVisual = Mathf.Lerp(sedVisual, cientifico.sed, t);
-        hambreVisual = Mathf.Lerp(hambreVisual, cientifico.hambre, t);
         staminaVisual = Mathf.Lerp(staminaVisual, cientifico.stamina, t);
 
         // Aplicar a sliders si existen
@@ -165,30 +274,8 @@ public class UIManager : MonoBehaviour
             {
                 Image fillImage = salud.fillRect.GetComponent<Image>();
                 if (fillImage != null)
-                    fillImage.color = cientifico.salud > 30 ? Color.green :
-                                       cientifico.salud > 15 ? Color.yellow : Color.red;
-            }
-        }
-        if (sed != null)
-        {
-            sed.value = sedVisual;
-            if (sed.fillRect != null)
-            {
-                Image fillImage = sed.fillRect.GetComponent<Image>();
-                if (fillImage != null)
-                    fillImage.color = cientifico.sed > 30 ? Color.cyan :
-                                       cientifico.sed > 15 ? Color.yellow : Color.red;
-            }
-        }
-        if (hambre != null)
-        {
-            hambre.value = hambreVisual;
-            if (hambre.fillRect != null)
-            {
-                Image fillImage = hambre.fillRect.GetComponent<Image>();
-                if (fillImage != null)
-                    fillImage.color = cientifico.hambre > 30 ? Color.green :
-                                       cientifico.hambre > 15 ? Color.yellow : Color.red;
+                    fillImage.color = cientifico.salud > 50 ? Color.green :
+                                       cientifico.salud > 25 ? Color.yellow : Color.red;
             }
         }
         if (stamina != null)
@@ -198,8 +285,8 @@ public class UIManager : MonoBehaviour
             {
                 Image fillImage = stamina.fillRect.GetComponent<Image>();
                 if (fillImage != null)
-                    fillImage.color = cientifico.stamina > 30 ? Color.blue :
-                                       cientifico.stamina > 15 ? Color.yellow : Color.red;
+                    fillImage.color = cientifico.stamina > 50 ? Color.blue :
+                                       cientifico.stamina > 25 ? Color.yellow : Color.red;
             }
         }
         

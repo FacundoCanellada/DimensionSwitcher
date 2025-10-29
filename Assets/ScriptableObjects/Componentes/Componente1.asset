@@ -14,5 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: 1
   type: 2
-  icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  icon: {fileID: -855298285791758126, guid: b8803381017c0ac4ba4618bed14172d4, type: 3}
+  valor: 0
   weaponDamage: 0
+  nombre: Componente 1
+  descripcion: 

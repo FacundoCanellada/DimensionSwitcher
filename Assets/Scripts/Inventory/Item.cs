@@ -20,6 +20,7 @@ public class Item : ScriptableObject
     
     /// <summary>
     /// Usa el item en el jugador aplicando sus efectos
+    /// SISTEMA SIMPLIFICADO: Food/Water curan salud según ID
     /// </summary>
     public bool Usar(Cientifico cientifico)
     {
@@ -27,16 +28,6 @@ public class Item : ScriptableObject
         
         switch (type)
         {
-            case ItemType.Food:
-                cientifico.hambre = Mathf.Min(100, cientifico.hambre + valor);
-                Debug.Log($"Consumiste {nombre}. Hambre restaurada: +{valor}");
-                return true;
-                
-            case ItemType.Water:
-                cientifico.sed = Mathf.Min(100, cientifico.sed + valor);
-                Debug.Log($"Consumiste {nombre}. Sed restaurada: +{valor}");
-                return true;
-                
             case ItemType.Weapon:
                 cientifico.arma = this;
                 Debug.Log($"Equipaste {nombre}. Daño: {weaponDamage}");
@@ -46,6 +37,14 @@ public class Item : ScriptableObject
                 // Los componentes no se "usan" directamente, se insertan en el estabilizador
                 Debug.Log($"Componente {nombre} listo para insertar en el estabilizador");
                 return false;
+                
+            case ItemType.Food:
+            case ItemType.Water:
+                // Consumir comida o agua - curan salud según ID
+                // El inventario se encarga de eliminarlo, aquí solo aplicamos efectos
+                cientifico.AplicarEfectoItem(id);
+                Debug.Log($"Consumiste {nombre}");
+                return true;
                 
             default:
                 Debug.LogWarning($"Tipo de item no reconocido: {type}");

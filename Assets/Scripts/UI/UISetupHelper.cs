@@ -229,10 +229,8 @@ public class UISetupHelper : MonoBehaviour
         uiManager.botonMenuVictoria = pantallaVictoria.transform.Find("BotonMenu")?.GetComponent<Button>();
         uiManager.botonReiniciarDerrota = pantallaDerrota.transform.Find("BotonReiniciar")?.GetComponent<Button>();
         
-        // Configurar sliders del HUD
+        // Configurar sliders del HUD - SISTEMA SIMPLIFICADO (solo salud y stamina)
         uiManager.salud = hudContainer.transform.Find("BarraSalud")?.GetComponent<Slider>();
-        uiManager.sed = hudContainer.transform.Find("BarraSed")?.GetComponent<Slider>();
-        uiManager.hambre = hudContainer.transform.Find("BarraHambre")?.GetComponent<Slider>();
         uiManager.stamina = hudContainer.transform.Find("BarraStamina")?.GetComponent<Slider>();
         
         // Configurar iconos

@@ -270,24 +270,20 @@ public class GameManager : MonoBehaviour
             Debug.Log("QuestManager reseteado");
         }
         
-        if (dimensionSwitcher != null) 
-        {
-            // ARREGLADO: Forzar dimensión normal para que los enemigos se vean
-            dimensionSwitcher.desbloqueado = true;
-            dimensionSwitcher.dimensionActual = false; // Normal
-            // Aplicar inmediatamente la dimensión normal
-            dimensionSwitcher.GetType().GetMethod("SetearDimension", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                ?.Invoke(dimensionSwitcher, new object[] { false });
-            Debug.Log("DimensionSwitcher forzado a DIMENSIÓN NORMAL - enemigos visibles");
-        }
-        
-        // CRÍTICO: Respawnear enemigos
+        // CRÍTICO: Respawnear enemigos ANTES de resetear dimensión
         Debug.Log("=== LLAMANDO A RESPAWNEAR ENEMIGOS ===");
         RespawnearEnemigos();
         
         // Verificar inmediatamente cuántos enemigos hay
         GameObject[] enemigosVerificar = GameObject.FindGameObjectsWithTag("Enemy");
         Debug.Log($"=== DESPUÉS DEL RESPAWN HAY {enemigosVerificar.Length} ENEMIGOS ===");
+        
+        // ARREGLO: Resetear dimensión DESPUÉS de que los enemigos existan
+        if (dimensionSwitcher != null) 
+        {
+            dimensionSwitcher.Resetear();
+            Debug.Log("DimensionSwitcher reseteado a DIMENSIÓN NORMAL - enemigos ahora visibles correctamente");
+        }
         
         Debug.Log("Enemigos respawneados");
 
