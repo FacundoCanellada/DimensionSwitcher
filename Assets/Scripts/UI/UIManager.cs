@@ -159,10 +159,6 @@ public class UIManager : MonoBehaviour
         menuPausaAbierto = true;
         if (menuPausa != null) menuPausa.SetActive(true);
         
-        // Sonido de menú abierto
-        if (AudioManager.Instance != null)
-            AudioManager.Instance.SonidoMenuAbrir();
-        
         // Mostrar pestaña de CONTROLES por defecto (para que el jugador sepa cómo jugar)
         pestanaActual = PestanaActiva.Controles;
         ActualizarPestanas();
@@ -174,10 +170,6 @@ public class UIManager : MonoBehaviour
     {
         menuPausaAbierto = false;
         if (menuPausa != null) menuPausa.SetActive(false);
-        
-        // Sonido de menú cerrado
-        if (AudioManager.Instance != null)
-            AudioManager.Instance.SonidoMenuCerrar();
         
         Time.timeScale = 1f; // Reanudar el juego
     }
@@ -263,17 +255,24 @@ public class UIManager : MonoBehaviour
 
     public void MostrarPantallaVictoria()
     {
+        Debug.Log("=== UIManager.MostrarPantallaVictoria() LLAMADO ===");
+        
         if (menuPrincipal != null) menuPrincipal.SetActive(false);
         if (hudContainer != null) hudContainer.SetActive(false);
-        if (pantallaVictoria != null) pantallaVictoria.SetActive(true);
+        if (pantallaVictoria != null) 
+        {
+            pantallaVictoria.SetActive(true);
+            Debug.Log("Pantalla de victoria activada");
+        }
+        else
+        {
+            Debug.LogError("pantallaVictoria es NULL!");
+        }
         if (pantallaDerrota != null) pantallaDerrota.SetActive(false);
-        
-        // Reproducir música de victoria
-        if (AudioManager.Instance != null)
-            AudioManager.Instance.ReproducirMusicaVictoria();
         
         // Pausar el juego
         Time.timeScale = 0;
+        Debug.Log("Juego pausado (Time.timeScale = 0)");
     }
 
     public void MostrarPantallaDerrota()
@@ -282,10 +281,6 @@ public class UIManager : MonoBehaviour
         if (hudContainer != null) hudContainer.SetActive(false);
         if (pantallaVictoria != null) pantallaVictoria.SetActive(false);
         if (pantallaDerrota != null) pantallaDerrota.SetActive(true);
-        
-        // Reproducir música de derrota
-        if (AudioManager.Instance != null)
-            AudioManager.Instance.ReproducirMusicaDerrota();
         
         // Pausar el juego
         Time.timeScale = 0;

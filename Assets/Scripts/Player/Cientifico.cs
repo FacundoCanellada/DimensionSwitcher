@@ -26,10 +26,14 @@ public class Cientifico : MonoBehaviour
     public float velocidadRecuperacionStamina = 25f; // Stamina por segundo en reposo
     public float velocidadRecuperacionStaminaMovimiento = 10f; // Stamina por segundo moviéndose
 
+    [Header("Sonido de Pasos")]
+    public float tiempoEntrePasos = 0.4f; // Tiempo en segundos entre cada sonido de paso
+
     // Variables internas
     private bool controlHabilitado = true;
     private Vector3 posicionInicial;
     private Item armaInicial;
+    private float tiempoUltimoPaso = 0f; // Temporizador para los pasos
 
     // Referencias a otros sistemas
     private QuestManager questManager;
@@ -79,6 +83,12 @@ public class Cientifico : MonoBehaviour
 
         // Actualizar visualización del arma
         ActualizarVisualizacionArma();
+        
+        // Forzar Z en 0 para evitar problemas con la cámara 2D
+        if (transform.position.z != 0)
+        {
+            transform.position = new Vector3(transform.position.x, transform.position.y, 0);
+        }
     }
 
     /// <summary>
@@ -107,6 +117,17 @@ public class Cientifico : MonoBehaviour
         // Sistema de stamina suave usando float interno
         if (direccion.magnitude > 0.1f)
         {
+            // Sonido de pasos mientras se mueve
+            tiempoUltimoPaso += Time.deltaTime;
+            if (tiempoUltimoPaso >= tiempoEntrePasos)
+            {
+                if (AudioManager.Instance != null)
+                {
+                    AudioManager.Instance.SonidoPaso();
+                }
+                tiempoUltimoPaso = 0f;
+            }
+
             // Consumo de stamina al moverse
             staminaReal -= 2f * Time.deltaTime; // 2 por segundo
             if (staminaReal < 0f) staminaReal = 0f;
@@ -115,6 +136,9 @@ public class Cientifico : MonoBehaviour
         }
         else
         {
+            // Resetear el temporizador cuando está quieto
+            tiempoUltimoPaso = 0f;
+            
             // Recuperación completa cuando está quieto
             staminaReal += velocidadRecuperacionStamina * Time.deltaTime;
         }
@@ -192,8 +216,14 @@ public class Cientifico : MonoBehaviour
     private void Atacar()
     {
         if (staminaReal < 10f)
-        { return;
+        {
+            return;
         }
+        
+        // Reproducir sonido de ataque
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.SonidoAtaque();
+        
         staminaReal -= 10f;
         if (staminaReal < 0f) staminaReal = 0f;
         stamina = Mathf.RoundToInt(staminaReal);
@@ -207,11 +237,13 @@ public class Cientifico : MonoBehaviour
             if (enemigo != null)
             {
                 enemigo.RecibirDanio(arma.weaponDamage);
-                ataqueExitoso = true; }
+                ataqueExitoso = true;
+            }
         }
 
         if (!ataqueExitoso)
-        { }
+        {
+        }
     }
 
     /// <summary>
@@ -348,7 +380,14 @@ public class Cientifico : MonoBehaviour
     /// PÚBLICO: Para ser llamado desde Item.Usar() sin manejar inventario
     /// </summary>
     public void AplicarEfectoItem(int itemId)
-    {// TODOS los items de comida, agua y medicina SOLO CURAN SALUD
+    {
+        // Reproducir sonido al usar item
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.SonidoUsarItem();
+        }
+
+        // TODOS los items de comida, agua y medicina SOLO CURAN SALUD
         // Items de comida (IDs 10-15) - Curan 25 HP
         if (itemId >= 10 && itemId <= 15)
         {
@@ -379,7 +418,18 @@ public class Cientifico : MonoBehaviour
     public void RecibirDanio(int cantidad, GameManager gameManager)
     {
         salud -= cantidad;
-        if (salud < 0) salud = 0; if (gameManager != null)
+        if (salud < 0) salud = 0;
+        
+        // Reproducir sonido según estado
+        if (AudioManager.Instance != null)
+        {
+            if (salud <= 0)
+                AudioManager.Instance.SonidoMuerte();
+            else
+                AudioManager.Instance.SonidoDañoRecibido();
+        }
+        
+        if (gameManager != null)
             gameManager.ComprobarDerrota();
     }
 
@@ -391,6 +441,12 @@ public class Cientifico : MonoBehaviour
         if (inventory != null)
         {
             inventory.AgregarItem(item.id, 1);
+
+            // Reproducir sonido de recoger item
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.SonidoRecogerItem();
+            }
 
             // Notificar al quest manager si es un componente
             if (item.type == ItemType.Components && questManager != null)

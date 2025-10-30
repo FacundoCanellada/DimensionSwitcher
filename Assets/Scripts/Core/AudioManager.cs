@@ -17,14 +17,10 @@ public class AudioManager : MonoBehaviour
     [Header("Música")]
     public AudioClip musicaMenu;
     public AudioClip musicaJuego;
-    public AudioClip musicaVictoria;
-    public AudioClip musicaDerrota;
 
     [Header("SFX - UI")]
     public AudioClip sonidoBoton;
     public AudioClip sonidoBotonHover;
-    public AudioClip sonidoMenuAbrir;
-    public AudioClip sonidoMenuCerrar;
 
     [Header("SFX - Jugador")]
     public AudioClip sonidoPaso;
@@ -35,7 +31,6 @@ public class AudioManager : MonoBehaviour
     public AudioClip sonidoUsarItem;
 
     [Header("SFX - Enemigos")]
-    public AudioClip sonidoEnemigoAtaque;
     public AudioClip sonidoEnemigoDaño;
     public AudioClip sonidoEnemigoMuerte;
 
@@ -97,16 +92,6 @@ public class AudioManager : MonoBehaviour
         CambiarMusica(musicaJuego);
     }
 
-    public void ReproducirMusicaVictoria()
-    {
-        CambiarMusica(musicaVictoria);
-    }
-
-    public void ReproducirMusicaDerrota()
-    {
-        CambiarMusica(musicaDerrota);
-    }
-
     void CambiarMusica(AudioClip nuevaMusica)
     {
         if (nuevaMusica == null) return;
@@ -151,8 +136,6 @@ public class AudioManager : MonoBehaviour
     // UI
     public void SonidoBoton() => ReproducirSFX(sonidoBoton);
     public void SonidoBotonHover() => ReproducirSFX(sonidoBotonHover);
-    public void SonidoMenuAbrir() => ReproducirSFX(sonidoMenuAbrir);
-    public void SonidoMenuCerrar() => ReproducirSFX(sonidoMenuCerrar);
 
     // Jugador
     public void SonidoPaso() => ReproducirSFX(sonidoPaso);
@@ -163,7 +146,6 @@ public class AudioManager : MonoBehaviour
     public void SonidoUsarItem() => ReproducirSFX(sonidoUsarItem);
 
     // Enemigos
-    public void SonidoEnemigoAtaque() => ReproducirSFX(sonidoEnemigoAtaque);
     public void SonidoEnemigoDaño() => ReproducirSFX(sonidoEnemigoDaño);
     public void SonidoEnemigoMuerte() => ReproducirSFX(sonidoEnemigoMuerte);
 

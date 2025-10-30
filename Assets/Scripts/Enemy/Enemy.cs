@@ -192,9 +192,19 @@ public class Enemy : MonoBehaviour
     /// </summary>
     public void RecibirDanio(int cantidad)
     {
-        saludEnemy -= cantidad;if (saludEnemy <= 0)
+        saludEnemy -= cantidad;
+        
+        if (saludEnemy <= 0)
         {
             Morir();
+        }
+        else
+        {
+            // Reproducir sonido de daño
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.SonidoEnemigoDaño();
+            }
         }
     }
     
@@ -202,7 +212,14 @@ public class Enemy : MonoBehaviour
     /// Maneja la muerte del enemigo y el drop de items
     /// </summary>
     private void Morir()
-    {// Iniciar animación de muerte
+    {
+        // Reproducir sonido de muerte
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.SonidoEnemigoMuerte();
+        }
+
+        // Iniciar animación de muerte
         if (animationController != null && !animationController.IsDead())
         {
             animationController.StartDeath();
@@ -231,17 +248,22 @@ public class Enemy : MonoBehaviour
     /// </summary>
     private void DropearItem()
     {
-        // Verificar probabilidad de drop
-        if (Random.Range(0f, 1f) > dropChance)
-        {return;
-        }
-        
-        // Seleccionar item para dropear
+        // Si el enemigo tiene componentes asignados, SIEMPRE dropearlos (ignorar dropChance)
         Item itemADropear = SeleccionarItemDrop();
         if (itemADropear == null) return;
         
-        // Calcular cantidad a dropear
-        int cantidad = Random.Range(dropMin, dropMax + 1);
+        // Los componentes siempre se dropean, otros items respetan la probabilidad
+        if (itemADropear.type != ItemType.Components)
+        {
+            // Verificar probabilidad de drop solo para items no-componentes
+            if (Random.Range(0f, 1f) > dropChance)
+            {
+                return;
+            }
+        }
+        
+        // Calcular cantidad a dropear (componentes siempre son 1)
+        int cantidad = (itemADropear.type == ItemType.Components) ? 1 : Random.Range(dropMin, dropMax + 1);
         
         // Agregar al inventario del jugador directamente (sistema simplificado)
         if (target != null && target.GetComponent<Inventory>() != null)
@@ -250,14 +272,19 @@ public class Enemy : MonoBehaviour
             bool agregado = inventarioJugador.AgregarItem(itemADropear.id, cantidad);
             
             if (agregado)
-            {// Notificar al QuestManager si es un componente
+            {
+                Debug.Log($"Enemy dropeó: {itemADropear.nombre} (ID: {itemADropear.id}) x{cantidad}");
+                
+                // Notificar al QuestManager si es un componente
                 if (itemADropear.type == ItemType.Components && questManager != null)
                 {
                     questManager.OnItemRecogido(itemADropear.id);
                 }
             }
             else
-            {}
+            {
+                Debug.LogWarning($"No se pudo agregar {itemADropear.nombre} al inventario (puede estar lleno)");
+            }
         }
     }
     
@@ -267,10 +294,21 @@ public class Enemy : MonoBehaviour
     private Item SeleccionarItemDrop()
     {
         if (posibleDrops == null || posibleDrops.Length == 0)
-        {return null;
+        {
+            return null;
         }
         
-        // Filtrar items por tipo si está especificado
+        // PRIORIDAD 1: Si hay componentes en posibleDrops, SIEMPRE devolver el primero
+        var componentes = System.Array.FindAll(posibleDrops, item => 
+            item != null && item.type == ItemType.Components);
+        
+        if (componentes.Length > 0)
+        {
+            Debug.Log($"Enemy tiene componente asignado: {componentes[0].nombre} (ID: {componentes[0].id})");
+            return componentes[0]; // Siempre devolver el primer componente
+        }
+        
+        // PRIORIDAD 2: Filtrar items por tipo si está especificado
         var itemsDelTipo = System.Array.FindAll(posibleDrops, item => 
             item != null && item.type == dropType);
         

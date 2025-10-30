@@ -68,6 +68,23 @@ public class EstabilizadorCuantico : MonoBehaviour
                         componentesInsertados.Add(id);
                         colocoAlguno = true;
                         textoInteractuar.text = $"Colocaste componente {id}!";
+                        
+                        // Reproducir sonido de componente colocado
+                        if (AudioManager.Instance != null)
+                        {
+                            AudioManager.Instance.SonidoComponenteColocado();
+                        }
+                        
+                        // Notificar al QuestManager que el componente fue USADO (removerlo de recolectados)
+                        if (gameManager != null)
+                        {
+                            QuestManager questManager = FindFirstObjectByType<QuestManager>();
+                            if (questManager != null)
+                            {
+                                questManager.OnComponenteColocado(id);
+                            }
+                        }
+                        
                         VerificarReparado();
                         if (gameManager != null)
                             gameManager.ComprobarVictoria();
@@ -95,12 +112,30 @@ public class EstabilizadorCuantico : MonoBehaviour
     void VerificarReparado()
     {
         reparado = componentesNecesarios.TrueForAll(x => componentesInsertados.Contains(x));
+        
+        Debug.Log($"VerificarReparado llamado. Componentes insertados: [{string.Join(", ", componentesInsertados)}]. Reparado: {reparado}");
+        
         if (reparado && textoInteractuar != null)
         {
-            textoInteractuar.text = "¡Estabilizador reparado!";// Notificar al GameManager inmediatamente
+            textoInteractuar.text = "¡Estabilizador reparado!";
+            
+            Debug.Log("¡ESTABILIZADOR COMPLETAMENTE REPARADO! Notificando a GameManager...");
+            
+            // Reproducir sonido de estabilizador completo
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.SonidoEstabilizadorCompleto();
+            }
+            
+            // Notificar al GameManager inmediatamente
             if (gameManager != null)
             {
+                Debug.Log("Llamando a gameManager.ComprobarVictoria()");
                 gameManager.ComprobarVictoria();
+            }
+            else
+            {
+                Debug.LogError("GameManager es NULL! No se puede comprobar victoria.");
             }
         }
     }
@@ -110,8 +145,16 @@ public class EstabilizadorCuantico : MonoBehaviour
         componentesInsertados.Clear();
         reparado = false;
         
+        // Actualizar el texto para reflejar el estado reseteado
+        if (textoInteractuar != null)
+        {
+            textoInteractuar.text = "Presiona E para colocar componentes";
+        }
+        
         // Ocultar el panel al resetear
         if (panelTexto != null)
             panelTexto.SetActive(false);
+        
+        Debug.Log("Estabilizador reseteado - Componentes eliminados");
     }
 }

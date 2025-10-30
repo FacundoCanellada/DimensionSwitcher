@@ -41,6 +41,19 @@ public class QuestManager : MonoBehaviour
     }
     
     /// <summary>
+    /// Llamado cuando el jugador coloca un componente en el estabilizador
+    /// Esto permite que el mismo componente se pueda recoger de nuevo
+    /// </summary>
+    public void OnComponenteColocado(int itemId)
+    {
+        if (componentesRecolectados.Contains(itemId))
+        {
+            componentesRecolectados.Remove(itemId);
+            Debug.Log($"Componente {itemId} colocado en estabilizador. Ahora puedes recogerlo de nuevo. ({componentesRecolectados.Count}/3)");
+        }
+    }
+    
+    /// <summary>
     /// Verifica si el jugador tiene los 3 componentes necesarios
     /// </summary>
     public bool TieneLos3Componentes()
@@ -84,7 +97,9 @@ public class QuestManager : MonoBehaviour
     /// </summary>
     public void Resetear()
     {
-        componentesRecolectados.Clear();}
+        componentesRecolectados.Clear();
+        Debug.Log("QuestManager reseteado - Componentes eliminados");
+    }
     
     /// <summary>
     /// Muestra el progreso actual en consola
