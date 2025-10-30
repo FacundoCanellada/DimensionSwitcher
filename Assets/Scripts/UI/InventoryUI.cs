@@ -43,34 +43,16 @@ public class InventoryUI : MonoBehaviour
         // Buscar referencias
         cientifico = FindFirstObjectByType<Cientifico>();
         if (cientifico != null)
-        {
-            Debug.Log("Científico encontrado");
-            inventory = cientifico.GetComponent<Inventory>();
+        {inventory = cientifico.GetComponent<Inventory>();
             if (inventory != null)
-            {
-                Debug.Log("Inventory encontrado en el científico");
-            }
+            {}
             else
-            {
-                Debug.LogError("NO se encontró componente Inventory en el científico");
-            }
+            {}
         }
         else
-        {
-            Debug.LogError("NO se encontró científico en la escena");
-        }
+        {}
         
-        // Verificar referencias del panel
-        Debug.Log($"InventoryPanel es null: {inventoryPanel == null}");
-        if (inventoryPanel != null) Debug.Log($"InventoryPanel name: {inventoryPanel.name}");
-        
-        Debug.Log($"SlotsParent es null: {slotsParent == null}");
-        if (slotsParent != null) Debug.Log($"SlotsParent name: {slotsParent.name}");
-        
-        Debug.Log($"SlotPrefab es null: {slotPrefab == null}");
-        if (slotPrefab != null) Debug.Log($"SlotPrefab name: {slotPrefab.name}");
-        
-        // Crear cache de items
+        // Verificar referencias del panelif (inventoryPanel != null)if (slotsParent != null)if (slotPrefab != null)// Crear cache de items
         CrearCacheItems();
         
         // Crear slots de inventario
@@ -79,23 +61,14 @@ public class InventoryUI : MonoBehaviour
         // Auto-asignar InventoryPanel si no está configurado
         if (inventoryPanel == null)
         {
-            inventoryPanel = gameObject;
-            Debug.Log("InventoryPanel auto-asignado al GameObject actual");
-        }
+            inventoryPanel = gameObject;}
         
         // Inicializar UI cerrado
         if (inventoryPanel != null)
         {
-            inventoryPanel.SetActive(false);
-            Debug.Log("InventoryPanel desactivado inicialmente");
-        }
+            inventoryPanel.SetActive(false);}
         else
-        {
-            Debug.LogError("InventoryPanel es NULL - ¡Asignar en Inspector!");
-        }
-        
-        Debug.Log("InventoryUI inicializado");
-    }
+        {}}
     
     void Update()
     {
@@ -117,9 +90,7 @@ public class InventoryUI : MonoBehaviour
     {
         // Cuando se activa el panel, SIEMPRE actualizar el inventario
         ActualizarInventario();
-        slotSeleccionado = 0;
-        Debug.Log("InventoryUI OnEnable - Inventario actualizado");
-    }
+        slotSeleccionado = 0;}
     
     /// <summary>
     /// Crea cache de items para acceso rápido por ID
@@ -137,10 +108,7 @@ public class InventoryUI : MonoBehaviour
                     itemsCache[item.id] = item;
                 }
             }
-        }
-        
-        Debug.Log($"Cache de items creado con {itemsCache.Count} items");
-    }
+        }}
     
     /// <summary>
     /// Crea los slots visuales del inventario
@@ -172,10 +140,7 @@ public class InventoryUI : MonoBehaviour
             
             slot.InicializarSlot(i);
             slots.Add(slot);
-        }
-        
-        Debug.Log($"Creados {slots.Count} slots de inventario");
-    }
+        }}
     
     /// <summary>
     /// Maneja la navegación con teclado
@@ -393,14 +358,10 @@ public class InventoryUI : MonoBehaviour
                 if (usado)
                 {
                     inventory.RemoverItem(itemId, 1);
-                    ActualizarInventario();
-                    Debug.Log($"Usado: {itemSO.nombre}");
-                }
+                    ActualizarInventario();}
             }
             else
-            {
-                Debug.LogWarning($"No se puede usar item desconocido ID: {itemId}");
-            }
+            {}
         }
     }
     
@@ -418,10 +379,7 @@ public class InventoryUI : MonoBehaviour
         {
             int itemId = itemsArray[slotSeleccionado].Key;
             inventory.RemoverItem(itemId, 1);
-            ActualizarInventario();
-            
-            Debug.Log($"Tiraste item ID: {itemId}");
-        }
+            ActualizarInventario();}
     }
     
     /// <summary>

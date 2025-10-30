@@ -26,9 +26,7 @@ public class PlayerAnimationControllerSimple : MonoBehaviour
             animator = GetComponent<Animator>();
             
         if (animator == null)
-        {
-            Debug.LogError("No se encontró Animator!");
-            return;
+        {return;
         }
         
         // Configurar dirección inicial

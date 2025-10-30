@@ -29,26 +29,18 @@ public class Item : ScriptableObject
         switch (type)
         {
             case ItemType.Weapon:
-                cientifico.arma = this;
-                Debug.Log($"Equipaste {nombre}. Daño: {weaponDamage}");
-                return true;
+                cientifico.arma = this;return true;
                 
             case ItemType.Components:
-                // Los componentes no se "usan" directamente, se insertan en el estabilizador
-                Debug.Log($"Componente {nombre} listo para insertar en el estabilizador");
-                return false;
+                // Los componentes no se "usan" directamente, se insertan en el estabilizadorreturn false;
                 
             case ItemType.Food:
             case ItemType.Water:
                 // Consumir comida o agua - curan salud según ID
                 // El inventario se encarga de eliminarlo, aquí solo aplicamos efectos
-                cientifico.AplicarEfectoItem(id);
-                Debug.Log($"Consumiste {nombre}");
-                return true;
+                cientifico.AplicarEfectoItem(id);return true;
                 
-            default:
-                Debug.LogWarning($"Tipo de item no reconocido: {type}");
-                return false;
+            default:return false;
         }
     }
 }

@@ -183,10 +183,7 @@ public class Enemy : MonoBehaviour
                 
                 // Aplicar daño inmediatamente
                 target.RecibirDanio(daño, gameManager);
-                tiempoUltimoAtaque = Time.time;
-                
-                Debug.Log($"Enemigo atacó por {daño} de daño!");
-            }
+                tiempoUltimoAtaque = Time.time;}
         }
     }
 
@@ -195,10 +192,7 @@ public class Enemy : MonoBehaviour
     /// </summary>
     public void RecibirDanio(int cantidad)
     {
-        saludEnemy -= cantidad;
-        Debug.Log($"Enemigo recibió {cantidad} de daño. Salud restante: {saludEnemy}");
-        
-        if (saludEnemy <= 0)
+        saludEnemy -= cantidad;if (saludEnemy <= 0)
         {
             Morir();
         }
@@ -208,10 +202,7 @@ public class Enemy : MonoBehaviour
     /// Maneja la muerte del enemigo y el drop de items
     /// </summary>
     private void Morir()
-    {
-        Debug.Log("Enemigo eliminado!");
-        
-        // Iniciar animación de muerte
+    {// Iniciar animación de muerte
         if (animationController != null && !animationController.IsDead())
         {
             animationController.StartDeath();
@@ -242,9 +233,7 @@ public class Enemy : MonoBehaviour
     {
         // Verificar probabilidad de drop
         if (Random.Range(0f, 1f) > dropChance)
-        {
-            Debug.Log("No se dropeó ningún item.");
-            return;
+        {return;
         }
         
         // Seleccionar item para dropear
@@ -261,19 +250,14 @@ public class Enemy : MonoBehaviour
             bool agregado = inventarioJugador.AgregarItem(itemADropear.id, cantidad);
             
             if (agregado)
-            {
-                Debug.Log($"Dropeado: {itemADropear.nombre} x{cantidad}");
-                
-                // Notificar al QuestManager si es un componente
+            {// Notificar al QuestManager si es un componente
                 if (itemADropear.type == ItemType.Components && questManager != null)
                 {
                     questManager.OnItemRecogido(itemADropear.id);
                 }
             }
             else
-            {
-                Debug.Log("Inventario lleno! Item perdido.");
-            }
+            {}
         }
     }
     
@@ -283,9 +267,7 @@ public class Enemy : MonoBehaviour
     private Item SeleccionarItemDrop()
     {
         if (posibleDrops == null || posibleDrops.Length == 0)
-        {
-            Debug.LogWarning("No hay items configurados para dropear en este enemigo.");
-            return null;
+        {return null;
         }
         
         // Filtrar items por tipo si está especificado
@@ -327,9 +309,7 @@ public class Enemy : MonoBehaviour
     /// </summary>
     public void ResetearSalud()
     {
-        saludEnemy = saludMaxima;
-        Debug.Log($"Salud del enemigo reseteada a {saludEnemy}");
-    }
+        saludEnemy = saludMaxima;}
     
     /// <summary>
     /// Obtiene la salud máxima configurada en el prefab
@@ -340,28 +320,20 @@ public class Enemy : MonoBehaviour
     }
     
     /// <summary>
-    /// Verifica si el enemigo está en la misma dimensión que el jugador
+    /// Verifica si el enemigo está en la misma dimensión que el jugador (YA NO APLICA - SISTEMA SIMPLIFICADO)
     /// </summary>
     private bool EstaEnMismaDimensionQueJugador()
     {
-        DimensionSwitcher dimensionSwitcher = FindFirstObjectByType<DimensionSwitcher>();
-        if (dimensionSwitcher == null) return true; // Si no hay dimension switcher, siempre pueden interactuar
-        
-        int dimNormal = LayerMask.NameToLayer("Dim_Normal");
-        int dimAltered = LayerMask.NameToLayer("Dim_Altered");
-        
-        // Enemigo en Dim_Altered: solo interactúa si jugador está en dimensión alterada
-        if (gameObject.layer == dimAltered)
-        {
-            return dimensionSwitcher.dimensionActual == true;
-        }
-        // Enemigo en Dim_Normal: solo interactúa si jugador está en dimensión normal
-        else if (gameObject.layer == dimNormal)
-        {
-            return dimensionSwitcher.dimensionActual == false;
-        }
-        
-        // Si el enemigo no está en ninguna dimensión específica, siempre puede interactuar
+        // Sistema simplificado: todos los enemigos están siempre en la misma dimensión
+        return true;
+    }
+    
+    /// <summary>
+    /// Verifica si el enemigo puede interactuar basado en dimensión (YA NO APLICA - SISTEMA SIMPLIFICADO)
+    /// </summary>
+    private bool PuedeInteractuar()
+    {
+        // Sistema simplificado: todos los enemigos pueden interactuar siempre
         return true;
     }
     

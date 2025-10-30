@@ -59,6 +59,10 @@ public class UIManager : MonoBehaviour
 
     private void Start()
     {
+        // Reproducir música del menú
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.ReproducirMusicaMenu();
+        
         // Configurar botones del MENÚ PRINCIPAL
         if (botonIniciar != null)
             botonIniciar.onClick.AddListener(IniciarJuego);
@@ -155,19 +159,25 @@ public class UIManager : MonoBehaviour
         menuPausaAbierto = true;
         if (menuPausa != null) menuPausa.SetActive(true);
         
+        // Sonido de menú abierto
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.SonidoMenuAbrir();
+        
         // Mostrar pestaña de CONTROLES por defecto (para que el jugador sepa cómo jugar)
         pestanaActual = PestanaActiva.Controles;
         ActualizarPestanas();
         
         Time.timeScale = 0f; // Pausar el juego
-        
-        Debug.Log("Menú de pausa abierto - Mostrando Controles por defecto");
     }
     
     private void CerrarMenuPausa()
     {
         menuPausaAbierto = false;
         if (menuPausa != null) menuPausa.SetActive(false);
+        
+        // Sonido de menú cerrado
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.SonidoMenuCerrar();
         
         Time.timeScale = 1f; // Reanudar el juego
     }
@@ -200,6 +210,10 @@ public class UIManager : MonoBehaviour
         if (hudContainer != null) hudContainer.SetActive(false);
         if (pantallaVictoria != null) pantallaVictoria.SetActive(false);
         if (pantallaDerrota != null) pantallaDerrota.SetActive(false);
+        
+        // Reproducir música del menú
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.ReproducirMusicaMenu();
         
         // Pausar el juego
         Time.timeScale = 0;
@@ -237,6 +251,10 @@ public class UIManager : MonoBehaviour
         if (pantallaVictoria != null) pantallaVictoria.SetActive(false);
         if (pantallaDerrota != null) pantallaDerrota.SetActive(false);
         
+        // Cambiar a música de juego
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.ReproducirMusicaJuego();
+        
         Time.timeScale = 1;
         
         if (gameManager != null)
@@ -250,6 +268,10 @@ public class UIManager : MonoBehaviour
         if (pantallaVictoria != null) pantallaVictoria.SetActive(true);
         if (pantallaDerrota != null) pantallaDerrota.SetActive(false);
         
+        // Reproducir música de victoria
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.ReproducirMusicaVictoria();
+        
         // Pausar el juego
         Time.timeScale = 0;
     }
@@ -260,6 +282,10 @@ public class UIManager : MonoBehaviour
         if (hudContainer != null) hudContainer.SetActive(false);
         if (pantallaVictoria != null) pantallaVictoria.SetActive(false);
         if (pantallaDerrota != null) pantallaDerrota.SetActive(true);
+        
+        // Reproducir música de derrota
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.ReproducirMusicaDerrota();
         
         // Pausar el juego
         Time.timeScale = 0;
@@ -295,13 +321,11 @@ public class UIManager : MonoBehaviour
     /// </summary>
     public void SalirDelJuego()
     {
-        Debug.Log("Saliendo del juego...");
-        
-        #if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
-        #else
-            Application.Quit();
-        #endif
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
     }
 
     /// <summary>
@@ -373,28 +397,10 @@ public class UIManager : MonoBehaviour
             }
         }
         
-        // Actualizar información de dimensión
-        if (dimensionSwitcher != null && dimensionText != null)
+        // Actualizar información de dimensión (Ya no aplica - sistema simplificado)
+        if (dimensionText != null)
         {
-            string estadoDimension = dimensionSwitcher.GetDimensionActual();
-            float cooldown = dimensionSwitcher.GetTiempoRestanteCooldown();
-            bool desbloqueado = dimensionSwitcher.EstaDesbloqueado();
-            
-            if (!desbloqueado)
-            {
-                dimensionText.text = "Dimensión: BLOQUEADA";
-                dimensionText.color = Color.gray;
-            }
-            else if (cooldown > 0)
-            {
-                dimensionText.text = $"Dimensión: {estadoDimension} (Cooldown: {cooldown:F1}s)";
-                dimensionText.color = Color.yellow;
-            }
-            else
-            {
-                dimensionText.text = $"Dimensión: {estadoDimension} [Tab para cambiar]";
-                dimensionText.color = estadoDimension == "NORMAL" ? Color.blue : Color.red;
-            }
+            dimensionText.text = ""; // Ocultar texto de dimensión
         }
     }
     
@@ -403,6 +409,6 @@ public class UIManager : MonoBehaviour
     /// </summary>
     public void Actualizar(Cientifico cientifico, EstabilizadorCuantico estabilizador)
     {
-        Actualizar(cientifico, estabilizador, null);
+        Actualizar(cientifico, estabilizador);
     }
 }

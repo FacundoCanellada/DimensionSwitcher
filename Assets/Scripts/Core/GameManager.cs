@@ -59,16 +59,12 @@ public class GameManager : MonoBehaviour
         // Guardar estado inicial de enemigos si están pre-colocados
         if (usarEnemigosPreColocados)
         {
-            GuardarEstadoInicialEnemigos();
-            Debug.Log("Sistema configurado para usar enemigos pre-colocados. NO se llamará RespawnearEnemigos en Start.");
-        }
+            GuardarEstadoInicialEnemigos();}
         
         // No iniciar automáticamente el juego, esperar por UIManager
         // Si no hay UIManager, usar comportamiento legacy
         if (uiManager == null)
-        {
-            Debug.Log("No se encontró UIManager, usando comportamiento legacy");
-            // Comportamiento legacy: iniciar directamente
+        {// Comportamiento legacy: iniciar directamente
             if (!usarEnemigosPreColocados)
             {
                 RespawnearEnemigos();
@@ -76,9 +72,7 @@ public class GameManager : MonoBehaviour
             juegoIniciado = true;
         }
         else
-        {
-            Debug.Log("UIManager encontrado, esperando inicio manual");
-            // Nuevo comportamiento: esperar por el UIManager
+        {// Nuevo comportamiento: esperar por el UIManager
             juegoIniciado = false;
         }
         
@@ -119,19 +113,14 @@ public class GameManager : MonoBehaviour
                     enemyScript.ResetearSalud();
                     enemyScript.Resetear();
                 }
-            }
-            Debug.Log("Enemigos pre-colocados reseteados sin duplicar.");
-        }
+            }}
         
         // Habilitar controles del jugador
         if (cientifico != null) cientifico.HabilitarControl(true);
         
         // Actualizar UI si existe
         if (uiManager != null)
-            uiManager.Actualizar(cientifico, estabilizador, dimensionSwitcher);
-
-        Debug.Log("¡Juego iniciado!");
-    }
+            uiManager.Actualizar(cientifico, estabilizador, dimensionSwitcher);}
 
     /// <summary>
     /// Resetea completamente el juego para volver al menú
@@ -147,10 +136,7 @@ public class GameManager : MonoBehaviour
         RespawnearEnemigos();
         
         // Deshabilitar controles hasta que se inicie nuevamente
-        if (cientifico != null) cientifico.HabilitarControl(false);
-        
-        Debug.Log("¡Juego reseteado completamente!");
-    }
+        if (cientifico != null) cientifico.HabilitarControl(false);}
 
     #endregion
 
@@ -189,7 +175,6 @@ public class GameManager : MonoBehaviour
             if (uiManager == null || juegoIniciado)
             {
                 TerminarJuego(false); // false = victoria
-                Debug.Log("¡VICTORIA! Todos los componentes encontrados y estabilizador reparado.");
             }
         }
     }
@@ -223,8 +208,6 @@ public class GameManager : MonoBehaviour
 
     public void ReiniciarNivel()
     {
-        Debug.Log("=== REINICIAR NIVEL INICIADO ===");
-        
         // Reactiva el tiempo y los inputs
         Time.timeScale = 1;
         juegoTerminado = false;
@@ -232,7 +215,6 @@ public class GameManager : MonoBehaviour
         // Usar UIManager para ocultar pantallas si está disponible
         if (uiManager != null)
         {
-            Debug.Log("Usando UIManager para reiniciar");
             uiManager.IniciarJuego(); // Esto oculta pantallas y muestra HUD
         }
         else
@@ -253,51 +235,31 @@ public class GameManager : MonoBehaviour
             }
             else
             {
-                cientifico.ResetearPosicion();
-                Debug.Log("Científico reposicionado sin resetear stats");
-            }
+                cientifico.ResetearPosicion();}
         }
         
         if (estabilizador != null) 
         {
-            estabilizador.Resetear();
-            Debug.Log("Estabilizador reseteado");
-        }
+            estabilizador.Resetear();}
         
         if (questManager != null) 
         {
-            questManager.Resetear();
-            Debug.Log("QuestManager reseteado");
-        }
+            questManager.Resetear();}
         
-        // CRÍTICO: Respawnear enemigos ANTES de resetear dimensión
-        Debug.Log("=== LLAMANDO A RESPAWNEAR ENEMIGOS ===");
-        RespawnearEnemigos();
+        // CRÍTICO: Respawnear enemigos ANTES de resetear dimensiónRespawnearEnemigos();
         
         // Verificar inmediatamente cuántos enemigos hay
-        GameObject[] enemigosVerificar = GameObject.FindGameObjectsWithTag("Enemy");
-        Debug.Log($"=== DESPUÉS DEL RESPAWN HAY {enemigosVerificar.Length} ENEMIGOS ===");
-        
-        // ARREGLO: Resetear dimensión DESPUÉS de que los enemigos existan
+        GameObject[] enemigosVerificar = GameObject.FindGameObjectsWithTag("Enemy");// ARREGLO: Resetear dimensión DESPUÉS de que los enemigos existan
         if (dimensionSwitcher != null) 
         {
-            dimensionSwitcher.Resetear();
-            Debug.Log("DimensionSwitcher reseteado a DIMENSIÓN NORMAL - enemigos ahora visibles correctamente");
-        }
-        
-        Debug.Log("Enemigos respawneados");
-
-        // Habilitar controles
+            dimensionSwitcher.Resetear();}// Habilitar controles
         if (cientifico != null) cientifico.HabilitarControl(true);
 
         // Actualizar UI
         if (uiManager != null)
         {
             uiManager.Actualizar(cientifico, estabilizador, dimensionSwitcher);
-        }
-
-        Debug.Log("¡Nivel reiniciado completamente!");
-    }
+        }}
 
     #endregion
 
@@ -310,10 +272,7 @@ public class GameManager : MonoBehaviour
     {
         enemigosIniciales.Clear();
         
-        GameObject[] enemigos = GameObject.FindGameObjectsWithTag("Enemy");
-        Debug.Log($"=== GUARDANDO ESTADO INICIAL DE {enemigos.Length} ENEMIGOS ===");
-        
-        foreach (GameObject enemigo in enemigos)
+        GameObject[] enemigos = GameObject.FindGameObjectsWithTag("Enemy");foreach (GameObject enemigo in enemigos)
         {
             Enemy enemyScript = enemigo.GetComponent<Enemy>();
             if (enemyScript == null) continue;
@@ -363,13 +322,10 @@ public class GameManager : MonoBehaviour
     void GuardarPosicionesInicialesEnemigos()
     {
         // Ya no es necesario, usamos posiciones fijas
-        Debug.Log("Usando posiciones fijas predefinidas");
     }
 
     public void RespawnearEnemigos()
     {
-        Debug.Log("=== RESPAWN ENEMIGOS INICIADO ===");
-        
         if (usarEnemigosPreColocados)
         {
             RespawnearEnemigosPreColocados();
@@ -377,27 +333,18 @@ public class GameManager : MonoBehaviour
         else
         {
             RespawnearEnemigosDesdePrefab();
-        }
-        
-        Debug.Log("=== RESPAWN ENEMIGOS COMPLETADO ===");
-    }
+        }}
     
     /// <summary>
     /// Restaura enemigos desde sus posiciones guardadas al inicio
     /// </summary>
     private void RespawnearEnemigosPreColocados()
-    {
-        Debug.Log("=== MODO: Restaurar enemigos pre-colocados ===");
-        
-        // Primero verificar si ya existen enemigos en la escena
+    {// Primero verificar si ya existen enemigos en la escena
         GameObject[] enemigosExistentes = GameObject.FindGameObjectsWithTag("Enemy");
         
         // Si ya hay enemigos Y tenemos datos guardados, solo resetearlos sin destruir
         if (enemigosExistentes.Length > 0 && enemigosIniciales.Count > 0 && enemigosExistentes.Length == enemigosIniciales.Count)
-        {
-            Debug.Log($"Reseteando {enemigosExistentes.Length} enemigos existentes a sus posiciones originales");
-            
-            for (int i = 0; i < enemigosExistentes.Length && i < enemigosIniciales.Count; i++)
+        {for (int i = 0; i < enemigosExistentes.Length && i < enemigosIniciales.Count; i++)
             {
                 GameObject enemigo = enemigosExistentes[i];
                 EnemySpawnData data = enemigosIniciales[i];
@@ -428,13 +375,10 @@ public class GameManager : MonoBehaviour
                 }
             }
             
-            Debug.Log("Enemigos reseteados sin destruir/recrear");
             return;
         }
         
         // Si no hay enemigos o la cantidad no coincide, destruir y recrear
-        Debug.Log($"Destruyendo {enemigosExistentes.Length} enemigos para recrear desde configuración guardada");
-        
         foreach (var enemigo in enemigosExistentes)
         {
             if (enemigo != null)
@@ -445,16 +389,12 @@ public class GameManager : MonoBehaviour
         
         // Verificar que tenemos datos guardados
         if (enemigosIniciales.Count == 0)
-        {
-            Debug.LogWarning("No hay enemigos iniciales guardados. ¿Los enemigos estaban en la escena al inicio?");
-            return;
+        {return;
         }
         
         // Verificar que tenemos prefab
         if (enemigoPrefab == null)
-        {
-            Debug.LogError("=== NO HAY PREFAB DE ENEMIGO CONFIGURADO ===");
-            return;
+        {return;
         }
         
         // Recrear cada enemigo desde su configuración guardada
@@ -466,9 +406,7 @@ public class GameManager : MonoBehaviour
             GameObject enemigo = Instantiate(enemigoPrefab, data.posicion, data.rotacion);
             
             if (enemigo == null)
-            {
-                Debug.LogError($"ERROR: No se pudo crear enemigo {i}");
-                continue;
+            {continue;
             }
             
             // Configurar propiedades básicas
@@ -510,14 +448,8 @@ public class GameManager : MonoBehaviour
     /// Crea enemigos desde prefab en posiciones fijas (modo original)
     /// </summary>
     private void RespawnearEnemigosDesdePrefab()
-    {
-        Debug.Log("=== MODO: Spawnear enemigos desde prefab ===");
-        
-        // Elimina todos los enemigos actuales
-        GameObject[] enemigosActuales = GameObject.FindGameObjectsWithTag("Enemy");
-        Debug.Log($"Destruyendo {enemigosActuales.Length} enemigos existentes");
-        
-        foreach (var enemigo in enemigosActuales)
+    {// Elimina todos los enemigos actuales
+        GameObject[] enemigosActuales = GameObject.FindGameObjectsWithTag("Enemy");foreach (var enemigo in enemigosActuales)
         {
             if (enemigo != null)
             {
@@ -527,9 +459,7 @@ public class GameManager : MonoBehaviour
 
         // Verificar que tenemos prefab
         if (enemigoPrefab == null)
-        {
-            Debug.LogError("=== NO HAY PREFAB DE ENEMIGO CONFIGURADO ===");
-            return;
+        {return;
         }
         
         // Posiciones fijas para los enemigos
@@ -539,24 +469,15 @@ public class GameManager : MonoBehaviour
             new Vector2(5f, -5f),
             new Vector2(-5f, -5f),
             new Vector2(0f, 8f)
-        };
-        
-        Debug.Log($"=== CREANDO {cantidadEnemigos} ENEMIGOS ===");
-        
-        // Crear enemigos
+        };// Crear enemigos
         for (int i = 0; i < cantidadEnemigos && i < posicionesFijas.Length; i++)
         {
             Vector2 pos = posicionesFijas[i];
             Item drop = (componentesDropEnemigos != null && i < componentesDropEnemigos.Count) 
-                        ? componentesDropEnemigos[i] : null;
-
-            Debug.Log($"Creando enemigo {i} en posición {pos}");
-            GameObject enemigo = Instantiate(enemigoPrefab, pos, Quaternion.identity);
+                        ? componentesDropEnemigos[i] : null;GameObject enemigo = Instantiate(enemigoPrefab, pos, Quaternion.identity);
             
             if (enemigo == null)
-            {
-                Debug.LogError($"ERROR: No se pudo crear enemigo {i}");
-                continue;
+            {continue;
             }
             
             // Configurar enemigo básico
@@ -577,10 +498,7 @@ public class GameManager : MonoBehaviour
                 if (drop != null && enemyScript.posibleDrops != null && enemyScript.posibleDrops.Length > 0)
                 {
                     enemyScript.posibleDrops[0] = drop;
-                }
-                
-                Debug.Log($"Enemigo {i} creado: Tipo={enemyScript.enemyType}, Vida={enemyScript.saludEnemy}");
-            }
+                }}
 
             // Activar colliders
             Collider2D[] colliders = enemigo.GetComponentsInChildren<Collider2D>();
@@ -629,9 +547,7 @@ public class GameManager : MonoBehaviour
     /// </summary>
     [ContextMenu("Forzar Respawn Enemigos")]
     public void ForzarRespawnEnemigos()
-    {
-        Debug.Log(">>> FORZANDO RESPAWN DE ENEMIGOS DESDE INSPECTOR <<<");
-        RespawnearEnemigos();
+    {RespawnearEnemigos();
     }
     
 
@@ -664,16 +580,7 @@ public class GameManager : MonoBehaviour
     void OnValidate()
     {
         // Verificar referencias básicas
-        if (cientifico == null)
-            Debug.LogWarning("GameManager: Falta referencia a Cientifico");
-        
-        if (estabilizador == null)
-            Debug.LogWarning("GameManager: Falta referencia a EstabilizadorCuantico");
-        
-        if (enemigoPrefab == null)
-            Debug.LogWarning("GameManager: Falta prefab de enemigo");
-            
-        if (cantidadEnemigos <= 0)
+        if (cientifico == null)if (estabilizador == null)if (enemigoPrefab == null)if (cantidadEnemigos <= 0)
             cantidadEnemigos = 3;
     }
 

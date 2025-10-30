@@ -84,9 +84,7 @@ public class QuestManager : MonoBehaviour
     /// </summary>
     public void Resetear()
     {
-        componentesRecolectados.Clear();
-        Debug.Log("Quest reseteada - Progreso de componentes limpiado");
-    }
+        componentesRecolectados.Clear();}
     
     /// <summary>
     /// Muestra el progreso actual en consola
@@ -105,14 +103,8 @@ public class QuestManager : MonoBehaviour
             {
                 progreso += $"[{componenteId}✗] ";
             }
-        }
-        
-        Debug.Log(progreso);
-        
-        if (TieneLos3Componentes())
-        {
-            Debug.Log("¡TODOS LOS COMPONENTES ENCONTRADOS! Ve al estabilizador para repararlo.");
-        }
+        }if (TieneLos3Componentes())
+        {}
     }
     
     /// <summary>

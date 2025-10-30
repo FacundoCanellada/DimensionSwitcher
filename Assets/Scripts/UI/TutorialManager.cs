@@ -89,10 +89,7 @@ public class TutorialManager : MonoBehaviour
             textoPagina.text = $"{paginaActual + 1}/{imagenesTutorial.Length}";
         
         // Actualizar botones
-        ActualizarBotones();
-        
-        Debug.Log($"Tutorial - Página {paginaActual + 1}/{imagenesTutorial.Length}");
-    }
+        ActualizarBotones();}
     
     void ActualizarBotones()
     {
@@ -148,7 +145,5 @@ public class TutorialManager : MonoBehaviour
     public void ResetearTutorial()
     {
         PlayerPrefs.DeleteKey(CLAVE_TUTORIAL_VISTO);
-        PlayerPrefs.Save();
-        Debug.Log("Tutorial reseteado - Se mostrará la próxima vez");
-    }
+        PlayerPrefs.Save();}
 }

@@ -102,10 +102,7 @@ public class UISetupHelper : MonoBehaviour
         if (uiManager != null)
         {
             ConfigurarUIManager(uiManager, menuPrincipal, hudContainer, pantallaVictoria, pantallaDerrota);
-        }
-
-        Debug.Log("UI creada automáticamente. Revisa el Canvas y configura las posiciones según tus necesidades.");
-    }
+        }}
 
     GameObject CrearPanel(Transform parent, string nombre)
     {
@@ -243,8 +240,5 @@ public class UISetupHelper : MonoBehaviour
         {
             uiManager.gameManager = gameManager;
             gameManager.uiManager = uiManager;
-        }
-        
-        Debug.Log("UIManager configurado automáticamente!");
-    }
+        }}
 }

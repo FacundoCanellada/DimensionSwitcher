@@ -160,9 +160,7 @@ public class MenuOpciones : MonoBehaviour
         Resolution resolucion = resoluciones[indiceResolucionActual];
         Screen.SetResolution(resolucion.width, resolucion.height, Screen.fullScreen);
         
-        ActualizarTextoResolucion();
-        Debug.Log($"Resolución cambiada a: {resolucion.width}x{resolucion.height}");
-    }
+        ActualizarTextoResolucion();}
     
     private void CambiarCalidad(int direccion)
     {
@@ -175,9 +173,7 @@ public class MenuOpciones : MonoBehaviour
         
         QualitySettings.SetQualityLevel(indiceCalidadActual);
         
-        ActualizarTextoCalidad();
-        Debug.Log($"Calidad cambiada a: {QualitySettings.names[indiceCalidadActual]}");
-    }
+        ActualizarTextoCalidad();}
     
     private void CambiarBrillo(int direccion)
     {

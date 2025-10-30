@@ -52,9 +52,7 @@ public class EnemyAnimationController : MonoBehaviour
             spriteRenderer = GetComponent<SpriteRenderer>();
             
         if (animator == null)
-        {
-            Debug.LogError("No se encontró Animator en EnemyAnimationController!");
-            return;
+        {return;
         }
         
         // Obtener configuración del tipo de enemigo

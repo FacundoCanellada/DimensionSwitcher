@@ -7,33 +7,33 @@ public class Cientifico : MonoBehaviour
     public int salud = 100;
     public int stamina = 100;
     private float staminaReal = 100f; // valor interno para regeneración suave
-    
+
     [Header("Sistema de Inventario")]
     public Inventory inventory;
     public Item arma;
-    
+
     [Header("Configuración de Movimiento")]
     public float velocidad = 5f;
     public float rangoAtaque = 2f;
-    
+
     [Header("Referencias Visuales")]
     public SpriteRenderer armaRenderer;
-    
+
     [Header("Sistema de Animaciones")]
     public PlayerAnimationControllerSimple animationController;
-    
+
     [Header("Recuperación de Stamina")]
     public float velocidadRecuperacionStamina = 25f; // Stamina por segundo en reposo
     public float velocidadRecuperacionStaminaMovimiento = 10f; // Stamina por segundo moviéndose
-    
+
     // Variables internas
     private bool controlHabilitado = true;
     private Vector3 posicionInicial;
     private Item armaInicial;
-    
+
     // Referencias a otros sistemas
     private QuestManager questManager;
-    
+
     // Configuración de inventario UI
     private bool inventarioAbierto = false;
     private int slotSeleccionado = 0;
@@ -43,44 +43,44 @@ public class Cientifico : MonoBehaviour
         // Configuración inicial
         posicionInicial = transform.position;
         armaInicial = arma;
-        
+
         // Buscar componentes necesarios
         if (inventory == null)
             inventory = GetComponent<Inventory>();
-        
+
         if (questManager == null)
             questManager = FindFirstObjectByType<QuestManager>();
-            
+
         // Buscar controlador de animaciones
         if (animationController == null)
             animationController = GetComponent<PlayerAnimationControllerSimple>();
-            
+
         if (animationController != null)
         {
             // Suscribirse al evento de finalización de ataque
             animationController.OnAttackComplete += OnAttackAnimationComplete;
         }
-        
+
         Debug.Log("Científico inicializado - Sistema simplificado (solo salud)");
     }
 
     void Update()
     {
         if (!controlHabilitado) return;
-        
+
         // Manejar movimiento
         ManejarMovimiento();
-        
+
         // Manejar combate
         ManejarCombate();
-        
+
         // Manejar inventario
         ManejarInventario();
-        
+
         // Actualizar visualización del arma
         ActualizarVisualizacionArma();
     }
-    
+
     /// <summary>
     /// Maneja el movimiento del jugador
     /// </summary>
@@ -89,21 +89,21 @@ public class Cientifico : MonoBehaviour
         // No permitir movimiento si está atacando
         if (animationController != null && animationController.IsAttacking())
             return;
-            
+
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
         Vector3 direccion = new Vector3(h, v, 0).normalized;
         Vector2 movimiento2D = new Vector2(h, v);
-        
+
         // Actualizar animaciones - SÚPER SIMPLE
         if (animationController != null)
         {
             animationController.UpdateMovement(movimiento2D);
         }
-        
+
         // Aplicar movimiento
         transform.position += direccion * velocidad * Time.deltaTime;
-        
+
         // Sistema de stamina suave usando float interno
         if (direccion.magnitude > 0.1f)
         {
@@ -121,7 +121,7 @@ public class Cientifico : MonoBehaviour
         if (staminaReal > 100f) staminaReal = 100f;
         stamina = Mathf.RoundToInt(staminaReal);
     }
-    
+
     /// <summary>
     /// Maneja el sistema de combate
     /// </summary>
@@ -136,7 +136,7 @@ public class Cientifico : MonoBehaviour
             }
         }
     }
-    
+
     /// <summary>
     /// Maneja la navegación del inventario
     /// </summary>
@@ -148,12 +148,12 @@ public class Cientifico : MonoBehaviour
             inventarioAbierto = !inventarioAbierto;
             Debug.Log($"Inventario {(inventarioAbierto ? "abierto" : "cerrado")}");
         }
-        
+
         if (inventarioAbierto && inventory != null)
         {
             var todosLosItems = inventory.GetTodosLosItems();
             int totalItems = todosLosItems.Count;
-            
+
             if (totalItems > 0)
             {
                 // Navegar entre items con flechas
@@ -167,7 +167,7 @@ public class Cientifico : MonoBehaviour
                     slotSeleccionado = (slotSeleccionado + 1) % totalItems;
                     MostrarItemSeleccionado();
                 }
-                
+
                 // Usar item con Enter
                 if (Input.GetKeyDown(KeyCode.Return))
                 {
@@ -175,7 +175,7 @@ public class Cientifico : MonoBehaviour
                 }
             }
         }
-        
+
         // Usar items rápidamente con números (1-9)
         for (int i = 1; i <= 9; i++)
         {
@@ -185,67 +185,59 @@ public class Cientifico : MonoBehaviour
             }
         }
     }
-    
+
     /// <summary>
     /// Ataque mejorado con consumo de stamina
     /// </summary>
     private void Atacar()
     {
         if (staminaReal < 10f)
-        {
-            Debug.Log("No tienes suficiente stamina para atacar!");
-            return;
+        { return;
         }
         staminaReal -= 10f;
         if (staminaReal < 0f) staminaReal = 0f;
         stamina = Mathf.RoundToInt(staminaReal);
-        
+
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, rangoAtaque);
         bool ataqueExitoso = false;
-        
+
         foreach (var hit in hits)
         {
             Enemy enemigo = hit.GetComponent<Enemy>();
             if (enemigo != null)
             {
                 enemigo.RecibirDanio(arma.weaponDamage);
-                ataqueExitoso = true;
-                Debug.Log($"Atacaste al enemigo por {arma.weaponDamage} de daño!");
-            }
+                ataqueExitoso = true; }
         }
-        
+
         if (!ataqueExitoso)
-        {
-            Debug.Log("No hay enemigos en rango de ataque.");
-        }
+        { }
     }
-    
+
     /// <summary>
     /// Inicia la secuencia de ataque con animaciones
     /// </summary>
     private void IniciarAtaque()
     {
         if (staminaReal < 10f)
-        {
-            Debug.Log("No tienes suficiente stamina para atacar!");
-            return;
+        { return;
         }
-        
+
         // Consumir stamina
         staminaReal -= 10f;
         if (staminaReal < 0f) staminaReal = 0f;
         stamina = Mathf.RoundToInt(staminaReal);
-        
+
         // Ejecutar el daño inmediatamente
         EjecutarAtaque();
-        
+
         // Iniciar animación de ataque
         if (animationController != null)
         {
             animationController.StartAttack();
         }
     }
-    
+
     /// <summary>
     /// Ejecuta el daño del ataque (llamado cuando la animación alcanza el frame adecuado)
     /// </summary>
@@ -253,36 +245,31 @@ public class Cientifico : MonoBehaviour
     {
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, rangoAtaque);
         bool ataqueExitoso = false;
-        
+
         foreach (var hit in hits)
         {
             Enemy enemigo = hit.GetComponent<Enemy>();
             if (enemigo != null)
             {
                 enemigo.RecibirDanio(arma.weaponDamage);
-                ataqueExitoso = true;
-                Debug.Log($"Atacaste al enemigo por {arma.weaponDamage} de daño!");
-            }
+                ataqueExitoso = true; }
         }
-        
+
         if (!ataqueExitoso)
-        {
-            Debug.Log("No hay enemigos en rango de ataque.");
-        }
+        { }
     }
-    
+
     /// <summary>
     /// Llamado cuando la animación de ataque se completa
     /// </summary>
     private void OnAttackAnimationComplete()
     {
         // Aquí puedes agregar efectos adicionales cuando termine el ataque
-        Debug.Log("Ataque completado");
     }
-    
+
     /// <summary>
     /// Actualiza la visualización del arma
-    /// </summary>
+        /// </summary>
     private void ActualizarVisualizacionArma()
     {
         if (armaRenderer != null)
@@ -298,7 +285,7 @@ public class Cientifico : MonoBehaviour
             }
         }
     }
-    
+
     /// <summary>
     /// Muestra información del item seleccionado en el inventario
     /// </summary>
@@ -306,14 +293,12 @@ public class Cientifico : MonoBehaviour
     {
         var todosLosItems = inventory.GetTodosLosItems();
         var itemsArray = new System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<int, int>>(todosLosItems);
-        
+
         if (slotSeleccionado < itemsArray.Count)
         {
-            var itemActual = itemsArray[slotSeleccionado];
-            Debug.Log($"Item seleccionado: ID {itemActual.Key} x{itemActual.Value}");
-        }
+            var itemActual = itemsArray[slotSeleccionado]; }
     }
-    
+
     /// <summary>
     /// Usa el item seleccionado actualmente
     /// </summary>
@@ -321,14 +306,14 @@ public class Cientifico : MonoBehaviour
     {
         var todosLosItems = inventory.GetTodosLosItems();
         var itemsArray = new System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<int, int>>(todosLosItems);
-        
+
         if (slotSeleccionado < itemsArray.Count)
         {
             int itemId = itemsArray[slotSeleccionado].Key;
             ConsumirItem(itemId);
         }
     }
-    
+
     /// <summary>
     /// Consume un item específico por ID
     /// </summary>
@@ -339,16 +324,11 @@ public class Cientifico : MonoBehaviour
             // Aquí necesitaríamos una referencia a los ScriptableObjects de items
             // Por ahora, aplicamos efectos básicos basados en el ID
             AplicarEfectoItem(itemId);
-            
-            inventory.RemoverItem(itemId, 1);
-            Debug.Log($"Consumiste item {itemId}");
-            return true;
-        }
-        
-        Debug.Log($"No tienes item {itemId} en el inventario");
-        return false;
+
+            inventory.RemoverItem(itemId, 1); return true;
+        } return false;
     }
-    
+
     /// <summary>
     /// Consumo rápido de items con teclas numéricas
     /// </summary>
@@ -356,23 +336,19 @@ public class Cientifico : MonoBehaviour
     {
         // IDs rápidos para consumibles comunes
         int[] idsRapidos = { 10, 11, 12, 13, 14, 15, 16, 17, 18 }; // Comida y agua
-        
+
         if (slot <= idsRapidos.Length)
         {
             ConsumirItem(idsRapidos[slot - 1]);
         }
     }
-    
+
     /// <summary>
     /// Aplica efectos básicos de items - SISTEMA SIMPLIFICADO (SOLO SALUD)
     /// PÚBLICO: Para ser llamado desde Item.Usar() sin manejar inventario
     /// </summary>
     public void AplicarEfectoItem(int itemId)
-    {
-        Debug.Log($"🍎 AplicarEfectoItem llamado con ID: {itemId}");
-        Debug.Log($"📊 ANTES: Salud:{salud}");
-        
-        // TODOS los items de comida, agua y medicina SOLO CURAN SALUD
+    {// TODOS los items de comida, agua y medicina SOLO CURAN SALUD
         // Items de comida (IDs 10-15) - Curan 25 HP
         if (itemId >= 10 && itemId <= 15)
         {
@@ -395,12 +371,7 @@ public class Cientifico : MonoBehaviour
             Debug.Log($"💊 Medicina usada: Salud {salud} (+40)");
         }
         else
-        {
-            Debug.LogWarning($"⚠️ Item ID {itemId} no reconocido - sin efectos aplicados");
-        }
-        
-        Debug.Log($"📊 DESPUÉS: Salud:{salud}");
-    }
+        { } }
 
     /// <summary>
     /// Recibe daño y maneja efectos
@@ -408,14 +379,10 @@ public class Cientifico : MonoBehaviour
     public void RecibirDanio(int cantidad, GameManager gameManager)
     {
         salud -= cantidad;
-        if (salud < 0) salud = 0;
-        
-        Debug.Log($"Recibiste {cantidad} de daño. Salud actual: {salud}");
-        
-        if (gameManager != null)
+        if (salud < 0) salud = 0; if (gameManager != null)
             gameManager.ComprobarDerrota();
     }
-    
+
     /// <summary>
     /// Maneja la interacción con objetos (legacy)
     /// </summary>
@@ -424,7 +391,7 @@ public class Cientifico : MonoBehaviour
         if (inventory != null)
         {
             inventory.AgregarItem(item.id, 1);
-            
+
             // Notificar al quest manager si es un componente
             if (item.type == ItemType.Components && questManager != null)
             {
@@ -442,21 +409,19 @@ public class Cientifico : MonoBehaviour
         salud = 100;
         stamina = 100;
         staminaReal = 100f;
-        
+
         if (inventory != null)
         {
-            inventory.Limpiar();
-            Debug.Log("Inventario limpiado - empieza vacío");
-        }
-        
+            inventory.Limpiar(); }
+
         arma = armaInicial;
         transform.position = posicionInicial;
         controlHabilitado = true;
         inventarioAbierto = false;
-        
+
         Debug.Log("Científico COMPLETAMENTE reseteado (salud + stamina + inventario + posición)");
     }
-    
+
     /// <summary>
     /// Resetea solo la posición sin tocar stats ni inventario (para respawn tras muerte)
     /// </summary>
@@ -465,14 +430,12 @@ public class Cientifico : MonoBehaviour
         transform.position = posicionInicial;
         controlHabilitado = true;
         inventarioAbierto = false;
-        
+
         // Solo resetear salud en caso de muerte
         if (salud <= 0)
         {
-            salud = 100;
-            Debug.Log("Salud restaurada tras muerte");
-        }
-        
+            salud = 100; }
+
         Debug.Log("Posición reseteada (manteniendo stats e inventario)");
     }
 
@@ -482,7 +445,7 @@ public class Cientifico : MonoBehaviour
     public void HabilitarControl(bool habilitado)
     {
         controlHabilitado = habilitado;
-        
+
         if (!habilitado)
         {
             inventarioAbierto = false;
@@ -490,7 +453,7 @@ public class Cientifico : MonoBehaviour
                 armaRenderer.enabled = false;
         }
     }
-    
+
     /// <summary>
     /// Dibuja gizmos para debug
     /// </summary>
@@ -502,7 +465,7 @@ public class Cientifico : MonoBehaviour
             animationController.OnAttackComplete -= OnAttackAnimationComplete;
         }
     }
-    
+
     void OnDrawGizmosSelected()
     {
         // Rango de ataque

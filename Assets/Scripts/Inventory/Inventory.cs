@@ -27,15 +27,10 @@ public class Inventory : MonoBehaviour
         else
         {
             if (slots.Count >= maxSlots)
-            {
-                Debug.Log("Inventario lleno!");
-                return false;
+            {return false;
             }
             slots[itemId] = cantidad;
-        }
-        
-        Debug.Log($"Agregado al inventario: Item {itemId} x{cantidad}");
-        return true;
+        }return true;
     }
     
     /// <summary>
@@ -56,10 +51,7 @@ public class Inventory : MonoBehaviour
         if (slots[itemId] <= 0)
         {
             slots.Remove(itemId);
-        }
-        
-        Debug.Log($"Removido del inventario: Item {itemId} x{cantidad}");
-        return true;
+        }return true;
     }
     
     /// <summary>
@@ -109,9 +101,7 @@ public class Inventory : MonoBehaviour
     /// </summary>
     public void Limpiar()
     {
-        slots.Clear();
-        Debug.Log("Inventario limpiado");
-    }
+        slots.Clear();}
     
     /// <summary>
     /// Verifica si el inventario está vacío

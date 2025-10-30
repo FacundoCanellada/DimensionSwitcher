@@ -51,20 +51,14 @@ public class PanelEstadisticas : MonoBehaviour
     private void ActualizarEstadisticas()
     {
         if (cientifico == null) 
-        {
-            Debug.LogWarning("PanelEstadisticas: No hay referencia al Científico!");
-            return;
+        {return;
         }
         
         // Actualizar barra de salud
         if (barraSalud != null)
         {
             barraSalud.maxValue = 100;
-            barraSalud.value = cientifico.salud;
-            
-            Debug.Log($"PanelEstadisticas actualizando: barraSalud.value = {cientifico.salud}");
-            
-            // Actualizar color según el valor
+            barraSalud.value = cientifico.salud;// Actualizar color según el valor
             if (barraSalud.fillRect != null)
             {
                 Image fillImage = barraSalud.fillRect.GetComponent<Image>();
@@ -78,19 +72,13 @@ public class PanelEstadisticas : MonoBehaviour
                         fillImage.color = Color.red;
                 }
                 else
-                {
-                    Debug.LogWarning("PanelEstadisticas: barraSalud.fillRect no tiene componente Image!");
-                }
+                {}
             }
             else
-            {
-                Debug.LogWarning("PanelEstadisticas: barraSalud.fillRect es null!");
-            }
+            {}
         }
         else
-        {
-            Debug.LogWarning("PanelEstadisticas: barraSalud es null!");
-        }
+        {}
         
         // Actualizar texto
         if (textoSalud != null)
@@ -98,8 +86,6 @@ public class PanelEstadisticas : MonoBehaviour
             textoSalud.text = $": {Mathf.RoundToInt(cientifico.salud)}/100";
         }
         else
-        {
-            Debug.LogWarning("PanelEstadisticas: textoSalud es null!");
-        }
+        {}
     }
 }
